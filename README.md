@@ -1,7 +1,7 @@
 # Continual_Learning_CV
 Continual Learning Toolbox for Computer Vision Tasks
 
-# OpenLORIS-Object 
+## OpenLORIS-Object 
 We are testing the performances based on OpenLORIS-Object dataset
 
 This is the implementation of the following paper: 
