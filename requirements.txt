@@ -3,5 +3,5 @@ pandas==0.24.2
 torch==0.1.2
 torchvision==0.2.2
 Pillow==6.2.0
-tqdm
+tqdm==4.19.9
 visdom

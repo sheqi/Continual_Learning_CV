@@ -17,6 +17,7 @@ The current version of the code has been tested with following libs:
 * `tqdm`
 * `visdom`
 * `Pillow`
+
 Experimental platforms:
 * `Intel Core i9 CPU`
 * `Nvidia RTX 2080 Ti GPU`
