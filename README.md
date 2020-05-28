@@ -21,6 +21,7 @@ Experimental platforms:
 * `Intel Core i9 CPU`
 * `Nvidia RTX 2080 Ti GPU`
 * `CUDA Toolkit 10.*`
+
 Install the required the packages inside the virtual environment:
 ```
 $ conda create -n yourenvname python=3.7 anaconda
