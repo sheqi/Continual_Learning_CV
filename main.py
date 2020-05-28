@@ -21,9 +21,9 @@ from lib.continual_learner import ContinualLearner
 from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
 
-EXPERIMENT = 'mydataset'
+EXPERIMENT = 'OpenLORIS'
 SEED = 7
-RESULT_DIR = './results1'
+RESULT_DIR = './Results'
 SCENARIO = 'domain'
 # size of latent representation
 Z_DIM = 100
