@@ -10,13 +10,17 @@ Qi She et al,
 The paper has been accepted into ICRA 2020. 
 
 ## Requirements
+
 The current version of the code has been tested with following libs:
 * `pytorch 1.1.0`
 * `torchvision 0.2.1`
 * `tqdm`
 * `visdom`
 * `Pillow`
-
+Experimental platforms:
+* `Intel Core i9 CPU`
+* `Nvidia RTX 2080 Ti GPU`
+* `CUDA Toolkit 10.*`
 Install the required the packages inside the virtual environment:
 ```
 $ conda create -n yourenvname python=3.7 anaconda
