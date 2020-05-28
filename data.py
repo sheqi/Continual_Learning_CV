@@ -51,7 +51,7 @@ datapath = ['bottle_01', 'bottle_02', 'bottle_03', 'bottle_04',
             ]
 
 
-class MyDataset(Dataset):
+class OpenLORIS(Dataset):
 
     def __init__(self, batch_num, mode='train', own_transform=None, factor='clutter'):
         batch_num += 1
