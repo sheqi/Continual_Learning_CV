@@ -11,10 +11,8 @@ import pickle
 import torch
 from torch import optim
 
-import utils
 from param_stamp import get_param_stamp, get_param_stamp_from_args
 import evaluate
-from data import get_multitask_experiment
 from lib.encoder import Classifier
 from lib.vae_models import AutoEncoder
 import lib.callbacks as cb
@@ -22,19 +20,16 @@ from lib.train import train_cl
 from lib.continual_learner import ContinualLearner
 from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
-import lib.visual_plt
 
 EXPERIMENT = 'mydataset'
 VISDOM = VISDOM_EXEMPLARS = None
 SEED = 7
 RESULT_DIR = './results1'
 SCENARIO = 'domain'
-# use binary (instead of multi-class) classication loss
-#BCE = True
 # size of latent representation
 Z_DIM = 100
 
-parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
+parser = argparse.ArgumentParser('./main.py')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--factor', type=str, default='clutter', dest='factor')
@@ -129,7 +124,6 @@ def run(args):
     if not os.path.isdir(RESULT_DIR):
         os.mkdir(RESULT_DIR)
 
-    scenario = SCENARIO
     # (but note that when XdG is used, task-identity information is being used so the actual scenario is still Task-IL)
 
     # If only want param-stamp, get it printed to screen and exit
@@ -328,8 +322,6 @@ def run(args):
     # -collect them in <lists>
     eval_cbs = [eval_cb, eval_cb_full]
     eval_cbs_exemplars = [eval_cb_exemplars]
-
-    # -------------------------------------------------------------------------------------------------#
 
     # --------------------#
     # ----- TRAINING -----#
