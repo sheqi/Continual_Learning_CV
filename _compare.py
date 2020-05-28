@@ -3,7 +3,6 @@ import argparse
 import os
 import numpy as np
 from param_stamp import get_param_stamp_from_args
-import visual_plt
 import main
 
 
@@ -77,7 +76,6 @@ icarl_params.add_argument('--use-exemplars', action='store_true', help="use stor
 # evaluation parameters
 eval_params = parser.add_argument_group('Evaluation Parameters')
 eval_params.add_argument('--pdf', action='store_true', help="generate pdfs for individual experiments")
-eval_params.add_argument('--visdom', action='store_true', help="use visdom for on-the-fly plots")
 eval_params.add_argument('--prec-n', type=int, default=1024, help="# samples for evaluating solver's precision")
 eval_params.add_argument('--sample-n', type=int, default=64, help="# images to show")
 
