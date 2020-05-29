@@ -1,7 +1,5 @@
 import numpy as np
 import torch
-import visual_visdom
-import visual_plt
 import utils
 
 
@@ -123,14 +121,13 @@ def initiate_precision_dict(n_tasks):
 
 
 def precision(model, datasets, current_task, iteration, classes_per_task=None, scenario="class",
-              precision_dict=None, test_size=None, visdom=None, verbose=False, summary_graph=True,
+              precision_dict=None, test_size=None, verbose=False, summary_graph=True,
               with_exemplars=False, no_task_mask=False):
     '''Evaluate precision of a classifier (=[model]) on all tasks so far (= up to [current_task]) using [datasets].
 
     [precision_dict]    None or <dict> of all measures to keep track of, to which results will be appended to
     [classes_per_task]  <int> number of active classes er task
-    [scenario]          <str> how to decide which classes to include during evaluating precision
-    [visdom]            None or <dict> with name of "graph" and "env" (if None, no visdom-plots are made)'''
+    [scenario]          <str> how to decide which classes to include during evaluating precision'''
 
     # Evaluate accuracy of model predictions for all tasks so far (reporting "0" for future tasks)
     n_tasks = len(datasets)
@@ -148,19 +145,6 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
     # Print results on screen
     if verbose:
         print(' => ave precision: {:.3f}'.format(average_precs))
-
-    # Send results to visdom server
-    names = ['task {}'.format(i + 1) for i in range(n_tasks)]
-    if visdom is not None:
-        visual_visdom.visualize_scalars(
-            precs, names=names, title="precision ({})".format(visdom["graph"]),
-            iteration=iteration, env=visdom["env"], ylabel="test precision"
-        )
-        if n_tasks>1 and summary_graph:
-            visual_visdom.visualize_scalars(
-                [average_precs], names=["ave"], title="ave precision ({})".format(visdom["graph"]),
-                iteration=iteration, env=visdom["env"], ylabel="test precision"
-            )
 
     # Append results to [progress]-dictionary and return
     if precision_dict is not None:
@@ -180,30 +164,6 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
 ####-----------------------------####
 
 
-def show_samples(model, config, pdf=None, visdom=None, size=32, title="Generated images"):
-    '''Plot samples from a generative model in [pdf] and/or in [visdom].'''
-
-    # Set model to evaluation-mode
-    mode = model.training
-    model.eval()
-
-    # Generate samples from the model
-    sample = model.sample(size)
-    image_tensor = sample.view(-1, config['channels'], config['size'], config['size']).cpu()
-
-    # Plot generated images in [pdf] and/or [visdom]
-    # -number of rows
-    nrow = int(np.ceil(np.sqrt(size)))
-    # -make plots
-    if pdf is not None:
-        visual_plt.plot_images_from_tensor(image_tensor, pdf, title=title, nrow=nrow)
-    if visdom is not None:
-        visual_visdom.visualize_images(
-            tensor=image_tensor, name='Generated samples ({})'.format(visdom["graph"]), env=visdom["env"], nrow=nrow,
-        )
-
-    # Set model back to initial mode
-    model.train(mode=mode)
 
 
 
@@ -214,40 +174,3 @@ def show_samples(model, config, pdf=None, visdom=None, size=32, title="Generated
 ####---------------------------------####
 
 
-def show_reconstruction(model, dataset, config, pdf=None, visdom=None, size=32, task=None, collate_fn=None):
-    '''Plot reconstructed examples by an auto-encoder [model] on [dataset], in [pdf] and/or in [visdom].'''
-
-    # Set model to evaluation-mode
-    mode = model.training
-    model.eval()
-
-    # Get data
-    data_loader = utils.get_data_loader(dataset, size, cuda=model._is_on_cuda(), collate_fn=collate_fn)
-    (data, labels) = next(iter(data_loader))
-    data, labels = data.to(model._device()), labels.to(model._device())
-
-    # Evaluate model
-    with torch.no_grad():
-        recon_batch, y_hat, mu, logvar, z = model(data, full=True)
-
-    # Plot original and reconstructed images
-    comparison = torch.cat(
-        [data.view(-1, config['channels'], config['size'], config['size'])[:size],
-         recon_batch.view(-1, config['channels'], config['size'], config['size'])[:size]]
-    ).cpu()
-    image_tensor = comparison.view(-1, config['channels'], config['size'], config['size'])
-    # -number of rows
-    nrow = int(np.ceil(np.sqrt(size*2)))
-    # -make plots
-    if pdf is not None:
-        task_stm = "" if task is None else " (task {})".format(task)
-        visual_plt.plot_images_from_tensor(
-            image_tensor, pdf, nrow=nrow, title="Reconstructions" + task_stm
-        )
-    if visdom is not None:
-        visual_visdom.visualize_images(
-            tensor=image_tensor, name='Reconstructions ({})'.format(visdom["graph"]), env=visdom["env"], nrow=nrow,
-        )
-
-    # Set model back to initial mode
-    model.train(mode=mode)

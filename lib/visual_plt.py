@@ -1,8 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
-# above 2 lines set the matplotlib backend to 'Agg', which
-#  enables matplotlib-plots to also be generated if no X-server
-#  is defined (e.g., when running in basic Docker-container)
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from torchvision.utils import make_grid
