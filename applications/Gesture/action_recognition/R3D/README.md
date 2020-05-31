@@ -1,2 +1,2 @@
 # 3D Resnet for video action recognition
-Egogesture currently added. Other dataset will be added shortly
+EgoGesture currently added. Other datasets will be added shortly
