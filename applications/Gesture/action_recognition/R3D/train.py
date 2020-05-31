@@ -72,7 +72,7 @@ def parse_opts():
                         help='Modality of input data. RGB, Depth, RGB-D and fusion. Fusion \
                             is only used when testing the two steam model')
     parser.add_argument('--n_classes', type=int, default=83) 
-    parser.add_argument('--n_finetune_classes', type=int, default=84)
+    parser.add_argument('--n_finetune_classes', type=int, default=83)
     parser.add_argument('--ft_begin_index', type=int, default=0, 
                         help='How many parameters need to be fine tuned')
     parser.add_argument('--no_cuda', type=bool, default=False)
