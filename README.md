@@ -1,12 +1,6 @@
 # Continual_Learning_CV
 Continual Learning Toolbox for Computer Vision Tasks
 
-## Refactoring and optimization
-* Delete unnecessary functions;
-* Add 1-2 datasets (Split-MNIST/Split-CIFAR);
-* Calculate ACC/BWT/FWT/overACC directly instead of listing the whole accuracy matrix
-* Integration on different CL methods (Rehealsal, Regularization)
-* Multi-GPU support/parallel support
 
 ## OpenLORIS-Object 
 We are testing the performances based on OpenLORIS-Object dataset
