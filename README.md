@@ -7,9 +7,8 @@ It means most of the SOTAs can be updated with novel data without retraining fro
 
 
 ## OpenLORIS-Object Datasets and Benchmarks
-We are testing the performances based on **OpenLORIS-Object dataset**
+We are testing the performances based on **OpenLORIS-Object dataset**. The basic codes are the implementation of the following paper: 
 
-The basic codes are the implementation of the following paper: 
 Qi She et al, 
 [OpenLORIS-Object: A Robotic Vision Dataset and Benchmark for Lifelong Deep Learning](https://arxiv.org/pdf/1911.06487.pdf)
 The paper has been accepted into ICRA 2020. 
