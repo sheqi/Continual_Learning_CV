@@ -176,8 +176,8 @@ Please consider citing our papers if you use this code in your research:
 @article{she2019openlorisobject,
   title={Openlorisobject: A robotic vision dataset and benchmark for lifelong deep learning},
   author={She, Qi and Feng, Fan and Hao, Xinyue and Yang, Qihan and Lan, Chuanlin and Lomonaco, Vincenzo and Shi, Xuesong and Wang, Zhengwei and Guo, Yao and Zhang, Yimin and others},
-  journal={arXiv preprint arXiv:1911.06487},
-  year={2019}
+  journal={International Conference on Robotics and Automation (ICRA)},
+  year={2020}
 }
 ```
 
