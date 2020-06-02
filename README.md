@@ -164,16 +164,25 @@ OpenLORISCode
 ## Citation 
 Please consider citing our papers if you use this code in your research:
 ```
-@misc{1911.06487,
-  Author = {Qi She and Fan Feng and Xinyue Hao and Qihan Yang and Chuanlin Lan and Vincenzo Lomonaco and Xuesong Shi and Zhengwei Wang and Yao Guo and Yimin Zhang and Fei Qiao and Rosa H. M. Chan},
-  Title = {OpenLORIS-Object: A Dataset and Benchmark towards Lifelong Object Recognition},
-  Year = {2019},
-  Eprint = {arXiv:1911.06487},
+@article{she2020iros,
+  title={IROS 2019 Lifelong Robotic Vision Challenge--Lifelong Object Recognition Report},
+  author={She, Qi and Feng, Fan and Liu, Qi and Chan, Rosa HM and Hao, Xinyue and Lan, Chuanlin and Yang, Qihan and Lomonaco, Vincenzo and Parisi, German I and Bae, Heechul and others},
+  journal={arXiv preprint arXiv:2004.14774},
+  year={2020}
+}
+```
+
+```
+@article{she2019openlorisobject,
+  title={Openlorisobject: A robotic vision dataset and benchmark for lifelong deep learning},
+  author={She, Qi and Feng, Fan and Hao, Xinyue and Yang, Qihan and Lan, Chuanlin and Lomonaco, Vincenzo and Shi, Xuesong and Wang, Zhengwei and Guo, Yao and Zhang, Yimin and others},
+  journal={arXiv preprint arXiv:1911.06487},
+  year={2019}
 }
 ```
 
 ## Acknowledgements
-Parts of code were borrowed from [here](https://github.com/GMvandeVen/continual-learning).
+Parts of code were borrowed from [here](https://github.com/GMvandeVen/continual-learning). 
 
 
 ## Issue / Want to Contribute ? 
