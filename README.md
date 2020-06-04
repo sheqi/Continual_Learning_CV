@@ -34,7 +34,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Data Preparation
-Step 1: Download data following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
+Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
 Step 2: Run following scripts:
 ```
