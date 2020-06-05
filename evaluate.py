@@ -1,7 +1,5 @@
 import numpy as np
 import torch
-import visual_visdom
-import visual_plt
 import utils
 
 
@@ -15,7 +13,6 @@ import utils
 def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
              with_exemplars=False, no_task_mask=False, task=None):
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
-
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
 
@@ -40,7 +37,7 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
                 break
         # -evaluate model (if requested, only on [allowed_classes])
         data, labels = data.to(model._device()), labels.to(model._device())
-        # labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
+        #labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
         with torch.no_grad():
             if with_exemplars:
                 predicted = model.classify_with_exemplars(data, allowed_classes=allowed_classes)
@@ -61,11 +58,9 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
         print('=> precision: {:.3f}'.format(precision))
     return precision
 
-
 def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
-              with_exemplars=False, no_task_mask=False, task=None):
+             with_exemplars=False, no_task_mask=False, task=None):
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
-
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
 
@@ -90,7 +85,7 @@ def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allow
                 break
         # -evaluate model (if requested, only on [allowed_classes])
         data, labels = data.to(model._device()), labels.to(model._device())
-        # labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
+        #labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
         with torch.no_grad():
             if with_exemplars:
                 predicted = model.classify_with_exemplars(data, allowed_classes=allowed_classes)
@@ -99,10 +94,10 @@ def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allow
                     predicted = predicted % model.classes
             else:
                 scores = model(data) if (allowed_classes is None) else model(data)[:, allowed_classes]
-                _, predicted = scores.topk(5, -1)
+                _, predicted = scores.topk(1,-1)
         # -update statistics
         for i in range(5):
-            total_correct += (predicted[:, i] == labels).sum().item()
+            total_correct += (predicted[:,i] == labels).sum().item()
         total_tested += len(data)
     precision = total_correct / total_tested
 
@@ -124,24 +119,22 @@ def initiate_precision_dict(n_tasks):
 
 
 def precision(model, datasets, current_task, iteration, classes_per_task=None, scenario="class",
-              precision_dict=None, test_size=None, visdom=None, verbose=False, summary_graph=True,
+              precision_dict=None, test_size=None, verbose=False, summary_graph=True,
               with_exemplars=False, no_task_mask=False):
     '''Evaluate precision of a classifier (=[model]) on all tasks so far (= up to [current_task]) using [datasets].
-
     [precision_dict]    None or <dict> of all measures to keep track of, to which results will be appended to
     [classes_per_task]  <int> number of active classes er task
-    [scenario]          <str> how to decide which classes to include during evaluating precision
-    [visdom]            None or <dict> with name of "graph" and "env" (if None, no visdom-plots are made)'''
+    [scenario]          <str> how to decide which classes to include during evaluating precision'''
 
     # Evaluate accuracy of model predictions for all tasks so far (reporting "0" for future tasks)
     n_tasks = len(datasets)
     precs = []
     for i in range(n_tasks):
-        if i + 1 <= current_task:
+        if i+1 <= current_task:
             allowed_classes = None
             precs.append(validate(model, datasets[i], test_size=test_size, verbose=verbose,
                                   allowed_classes=allowed_classes, with_exemplars=with_exemplars,
-                                  no_task_mask=no_task_mask, task=i + 1))
+                                  no_task_mask=no_task_mask, task=i+1))
         else:
             precs.append(0)
     average_precs = sum([precs[task_id] for task_id in range(current_task)]) / current_task
@@ -150,18 +143,7 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
     if verbose:
         print(' => ave precision: {:.3f}'.format(average_precs))
 
-    # Send results to visdom server
     names = ['task {}'.format(i + 1) for i in range(n_tasks)]
-    if visdom is not None:
-        visual_visdom.visualize_scalars(
-            precs, names=names, title="precision ({})".format(visdom["graph"]),
-            iteration=iteration, env=visdom["env"], ylabel="test precision"
-        )
-        if n_tasks > 1 and summary_graph:
-            visual_visdom.visualize_scalars(
-                [average_precs], names=["ave"], title="ave precision ({})".format(visdom["graph"]),
-                iteration=iteration, env=visdom["env"], ylabel="test precision"
-            )
 
     # Append results to [progress]-dictionary and return
     if precision_dict is not None:
@@ -173,6 +155,7 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
     return precision_dict
 
 
+
 ####--------------------------------------------------------------------------------------------------------------####
 
 ####-----------------------------####
@@ -180,30 +163,7 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
 ####-----------------------------####
 
 
-def show_samples(model, config, pdf=None, visdom=None, size=32, title="Generated images"):
-    '''Plot samples from a generative model in [pdf] and/or in [visdom].'''
 
-    # Set model to evaluation-mode
-    mode = model.training
-    model.eval()
-
-    # Generate samples from the model
-    sample = model.sample(size)
-    image_tensor = sample.view(-1, config['channels'], config['size'], config['size']).cpu()
-
-    # Plot generated images in [pdf] and/or [visdom]
-    # -number of rows
-    nrow = int(np.ceil(np.sqrt(size)))
-    # -make plots
-    if pdf is not None:
-        visual_plt.plot_images_from_tensor(image_tensor, pdf, title=title, nrow=nrow)
-    if visdom is not None:
-        visual_visdom.visualize_images(
-            tensor=image_tensor, name='Generated samples ({})'.format(visdom["graph"]), env=visdom["env"], nrow=nrow,
-        )
-
-    # Set model back to initial mode
-    model.train(mode=mode)
 
 
 ####--------------------------------------------------------------------------------------------------------------####
@@ -211,42 +171,3 @@ def show_samples(model, config, pdf=None, visdom=None, size=32, title="Generated
 ####---------------------------------####
 ####----RECONSTRUCTION EVALUATION----####
 ####---------------------------------####
-
-
-def show_reconstruction(model, dataset, config, pdf=None, visdom=None, size=32, task=None, collate_fn=None):
-    '''Plot reconstructed examples by an auto-encoder [model] on [dataset], in [pdf] and/or in [visdom].'''
-
-    # Set model to evaluation-mode
-    mode = model.training
-    model.eval()
-
-    # Get data
-    data_loader = utils.get_data_loader(dataset, size, cuda=model._is_on_cuda(), collate_fn=collate_fn)
-    (data, labels) = next(iter(data_loader))
-    data, labels = data.to(model._device()), labels.to(model._device())
-
-    # Evaluate model
-    with torch.no_grad():
-        recon_batch, y_hat, mu, logvar, z = model(data, full=True)
-
-    # Plot original and reconstructed images
-    comparison = torch.cat(
-        [data.view(-1, config['channels'], config['size'], config['size'])[:size],
-         recon_batch.view(-1, config['channels'], config['size'], config['size'])[:size]]
-    ).cpu()
-    image_tensor = comparison.view(-1, config['channels'], config['size'], config['size'])
-    # -number of rows
-    nrow = int(np.ceil(np.sqrt(size * 2)))
-    # -make plots
-    if pdf is not None:
-        task_stm = "" if task is None else " (task {})".format(task)
-        visual_plt.plot_images_from_tensor(
-            image_tensor, pdf, nrow=nrow, title="Reconstructions" + task_stm
-        )
-    if visdom is not None:
-        visual_visdom.visualize_images(
-            tensor=image_tensor, name='Reconstructions ({})'.format(visdom["graph"]), env=visdom["env"], nrow=nrow,
-        )
-
-    # Set model back to initial mode
-    model.train(mode=mode)
