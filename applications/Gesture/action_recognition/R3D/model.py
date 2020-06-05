@@ -6,7 +6,7 @@ import pdb
 from models import resnet, resnext, resnetl, c3d
 
 
-def generate_model(opt):
+def generate_model(opt, n_classes):
     assert opt.model in [
         'resnet', 'resnetl', 'resnext', 'c3d'
     ]
@@ -18,20 +18,20 @@ def generate_model(opt):
 
         if opt.model_depth == 10:
             model = resnet.resnet10(
-                num_classes=opt.n_classes,
+                num_classes=n_classes,
                 shortcut_type=opt.resnet_shortcut,
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len)
 
         elif opt.model_depth == 18:
             model = resnet.resnet18(
-                num_classes=opt.n_classes,
+                num_classes=n_classes,
                 shortcut_type=opt.resnet_shortcut,
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len)
         elif opt.model_depth == 50:
             model = resnet.resnet50(
-                num_classes=opt.n_classes,
+                num_classes=n_classes,
                 shortcut_type=opt.resnet_shortcut,
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len)
@@ -44,7 +44,7 @@ def generate_model(opt):
 
         if opt.model_depth == 10:
             model = resnetl.resnetl10(
-                num_classes=opt.n_classes,
+                num_classes=n_classes,
                 shortcut_type=opt.resnet_shortcut,
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len)
@@ -56,7 +56,7 @@ def generate_model(opt):
 
         if opt.model_depth == 101:
             model = resnext.resnet101(
-                num_classes=opt.n_classes,
+                num_classes=n_classes,
                 shortcut_type=opt.resnet_shortcut,
                 cardinality=opt.resnext_cardinality,
                 sample_size=opt.sample_size,
@@ -70,7 +70,7 @@ def generate_model(opt):
             model = c3d.c3d_v1(
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len,
-                num_classes=opt.n_classes)
+                num_classes=n_classes)
     if not opt.no_cuda:
         model = model.cuda()
         model = nn.DataParallel(model, device_ids=None)
@@ -118,7 +118,7 @@ def generate_model(opt):
             model.module.fc = model.module.fc.cuda()
         else:
             model.module.fc = nn.Linear(model.module.fc.in_features,
-                                        opt.n_finetune_classes)
+                                        n_classes)
             model.module.fc = model.module.fc.cuda()
 
         parameters = get_fine_tuning_parameters(model, opt.ft_begin_index)
@@ -164,7 +164,7 @@ def generate_model(opt):
                 model.fc[0].in_features, model.fc[0].out_features)
         else:
             model.fc = nn.Linear(model.fc.in_features,
-                                        opt.n_finetune_classes)
+                                        n_classes)
 
         parameters = get_fine_tuning_parameters(model, opt.ft_begin_index)
         return model, parameters
