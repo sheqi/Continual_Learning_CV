@@ -4,6 +4,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import os
 
+
 class DataUtils(object):
     def __init__(self, filename=None, outpath=None):
         self._filename = filename
@@ -29,7 +30,7 @@ class DataUtils(object):
         numMagic, self._imgNums, numRows, numCols = struct.unpack_from(self._fourBytes2, buf, index)
         index += struct.calcsize(self._fourBytes)
         images = []
-        print('image nums: %d' % self ._imgNums)
+        print('image nums: %d' % self._imgNums)
         for i in range(self._imgNums):
             imgVal = struct.unpack_from(self._pictureBytes2, buf, index)
             index += struct.calcsize(self._pictureBytes2)
@@ -59,11 +60,10 @@ class DataUtils(object):
         m, n = np.shape(arrX)
         for i in range(imgNums):
             img = np.array(arrX[i])
-            img = img.reshape(28, 28)*255
-            outfile = 'task{}/{}/{}.png'.format(arrY[i]//2+1,arrY[i]%2+1,i)
+            img = img.reshape(28, 28) * 255
+            outfile = 'task{}/{}/{}.png'.format(arrY[i] // 2 + 1, arrY[i] % 2 + 1, i)
             img = Image.fromarray(np.uint8(img))
             img.save(self._outpath + '/' + outfile)
-
 
 
 if __name__ == '__main__':
@@ -73,8 +73,8 @@ if __name__ == '__main__':
     testfile_y = 't10k-labels-idx1-ubyte'
 
     for i in range(10):
-        os.makedirs('./train/task{}/{}/'.format(i//2+1,i%2+1),exist_ok=True)
-        os.makedirs('./test/task{}/{}/'.format(i//2+1,i%2+1),exist_ok=True)
+        os.makedirs('./train/task{}/{}/'.format(i // 2 + 1, i % 2 + 1), exist_ok=True)
+        os.makedirs('./test/task{}/{}/'.format(i // 2 + 1, i % 2 + 1), exist_ok=True)
 
     # 加载mnist数据集
     train_X, train_img_nums = DataUtils(filename=trainfile_X).getImage()
@@ -85,8 +85,7 @@ if __name__ == '__main__':
     # 以下内容是将图像保存到本地文件中
     path_trainset = "train"
     path_testset = "test"
-    os.makedirs(path_trainset,exist_ok=True)
-    os.makedirs(path_testset,exist_ok=True)
+    os.makedirs(path_trainset, exist_ok=True)
+    os.makedirs(path_testset, exist_ok=True)
     DataUtils(outpath=path_trainset).outImg(train_X, train_y, train_img_nums)
     DataUtils(outpath=path_testset).outImg(test_X, test_y, test_img_nums)
-

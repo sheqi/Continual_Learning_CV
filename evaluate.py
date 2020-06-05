@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import utils
 
+
 ####-----------------------------####
 ####----model evaluation----####
 ####-----------------------------####
@@ -34,7 +35,7 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
                 break
         # -evaluate model (if requested, only on [allowed_classes])
         data, labels = data.to(model._device()), labels.to(model._device())
-        #labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
+        # labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
         with torch.no_grad():
             if with_exemplars:
                 predicted = model.classify_with_exemplars(data, allowed_classes=allowed_classes)
@@ -55,8 +56,9 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
         print('=> precision: {:.3f}'.format(precision))
     return precision
 
+
 def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
-             with_exemplars=False, no_task_mask=False, task=None):
+              with_exemplars=False, no_task_mask=False, task=None):
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
@@ -82,7 +84,7 @@ def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allow
                 break
         # -evaluate model (if requested, only on [allowed_classes])
         data, labels = data.to(model._device()), labels.to(model._device())
-        #labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
+        # labels = labels - allowed_classes[0] if (allowed_classes is not None) else labels
         with torch.no_grad():
             if with_exemplars:
                 predicted = model.classify_with_exemplars(data, allowed_classes=allowed_classes)
@@ -91,10 +93,10 @@ def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allow
                     predicted = predicted % model.classes
             else:
                 scores = model(data) if (allowed_classes is None) else model(data)[:, allowed_classes]
-                _, predicted = scores.topk(1,-1)
+                _, predicted = scores.topk(1, -1)
         # -update statistics
         for i in range(5):
-            total_correct += (predicted[:,i] == labels).sum().item()
+            total_correct += (predicted[:, i] == labels).sum().item()
         total_tested += len(data)
     precision = total_correct / total_tested
 
@@ -127,11 +129,11 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
     n_tasks = len(datasets)
     precs = []
     for i in range(n_tasks):
-        if i+1 <= current_task:
+        if i + 1 <= current_task:
             allowed_classes = None
             precs.append(validate(model, datasets[i], test_size=test_size, verbose=verbose,
                                   allowed_classes=allowed_classes, with_exemplars=with_exemplars,
-                                  no_task_mask=no_task_mask, task=i+1))
+                                  no_task_mask=no_task_mask, task=i + 1))
         else:
             precs.append(0)
     average_precs = sum([precs[task_id] for task_id in range(current_task)]) / current_task
