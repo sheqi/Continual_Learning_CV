@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
-
 sys.path.append('./lib')
+
 import argparse
 import os
 import datetime
@@ -37,11 +37,11 @@ Z_DIM = 100
 parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
-parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
+
+parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--cumulative', type=int, default=0, dest='cul')
 parser.add_argument('--bce', action='store_true')
-
 parser.add_argument('--tasks', type=int, default=9)
 
 parser.add_argument('--fc-layers', type=int, default=3, dest='fc_lay')
@@ -77,7 +77,6 @@ parser.add_argument('--emp-fi', action='store_true')
 parser.add_argument('--si', action='store_true')
 parser.add_argument('--c', type=float, default=0.3, dest="si_c")
 parser.add_argument('--epsilon', type=float, default=0.2, dest="epsilon")
-parser.add_argument('--xdg', type=float, default=0., dest="gating_prop")
 
 parser.add_argument('--icarl', action='store_true')
 parser.add_argument('--use-exemplars', action='store_true')
@@ -97,7 +96,9 @@ parser.add_argument('--sample-n', type=int, default=64)
 def run(args):
     result_path = os.path.join('./precision_onEachTask', args.savepath)
     savepath = result_path + '/' + str(datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')) + '.csv'
-    os.makedirs(result_path, exist_ok=True)
+    if not os.path.exists(dirs):
+        print('no exist the path and create one ...')
+        os.makedirs(result_path, exist_ok=True)
 
     # Set default arguments
     args.lr_gen = args.lr if args.lr_gen is None else args.lr_gen
@@ -114,23 +115,15 @@ def run(args):
         args.use_exemplars = True
         args.add_exemplars = True
 
-    # -if EWC, SI or XdG is selected together with 'feedback', give error
-    if args.feedback and (args.ewc or args.si or args.gating_prop > 0 or args.icarl):
-        raise NotImplementedError("EWC, SI, XdG and iCaRL are not supported with feedback connections.")
+    # -if EWC or SI is selected together with 'feedback', give error
+    if args.feedback and (args.ewc or args.si or args.icarl):
+        raise NotImplementedError("EWC, SI and iCaRL are not supported with feedback connections.")
     # -if binary classification loss is selected together with 'feedback', give error
     if args.feedback and args.bce:
         raise NotImplementedError("Binary classification loss not supported with feedback connections.")
-    # -if XdG is selected together with both replay and EWC, give error (either one of them alone with XdG is fine)
-    if args.gating_prop > 0 and (not args.replay == "none") and (args.ewc or args.si):
-        raise NotImplementedError("XdG is not supported with both '{}' replay and EWC / SI.".format(args.replay))
-        # --> problem is that applying different task-masks interferes with gradient calculation
-        #    (should be possible to overcome by calculating backward step on EWC/SI-loss also for each mask separately)
-    # -create plots- and results-directories if needed
+
     if not os.path.isdir(RESULT_DIR):
         os.mkdir(RESULT_DIR)
-
-    scenario = SCENARIO
-    # (but note that when XdG is used, task-identity information is being used so the actual scenario is still Task-IL)
 
     # If only want param-stamp, get it printed to screen and exit
     if hasattr(args, "get_stamp") and args.get_stamp:
@@ -183,7 +176,7 @@ def run(args):
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
             fc_layers=args.fc_lay, fc_units=args.fc_units, fc_drop=args.fc_drop, fc_nl=args.fc_nl,
             fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=True if args.gating_prop > 0 else False,
-            binaryCE=args.bce, binaryCE_distill=True,
+            binaryCE=args.bce
         ).to(device)
 
     # Define optimizer (only include parameters that "requires_grad")
@@ -224,22 +217,6 @@ def run(args):
         model.si_c = args.si_c if args.si else 0
         if args.si:
             model.epsilon = args.epsilon
-
-    # XdG: create for every task a "mask" for each hidden fully connected layer
-    if isinstance(model, ContinualLearner) and args.gating_prop > 0:
-        mask_dict = {}
-        excit_buffer_list = []
-        for task_id in range(args.tasks):
-            mask_dict[task_id + 1] = {}
-            for i in range(model.fcE.layers):
-                layer = getattr(model.fcE, "fcLayer{}".format(i + 1)).linear
-                if task_id == 0:
-                    excit_buffer_list.append(layer.excit_buffer)
-                n_units = len(layer.excit_buffer)
-                gated_units = np.random.choice(n_units, size=int(args.gating_prop * n_units), replace=False)
-                mask_dict[task_id + 1][i] = gated_units
-        model.mask_dict = mask_dict
-        model.excit_buffer_list = excit_buffer_list
 
     # -------------------------------------------------------------------------------------------------#
 
@@ -346,7 +323,7 @@ def run(args):
         generator=generator, gen_iters=args.g_iters, gen_loss_cbs=generator_loss_cbs,
         sample_cbs=sample_cbs, eval_cbs=eval_cbs, loss_cbs=generator_loss_cbs if args.feedback else solver_loss_cbs,
         eval_cbs_exemplars=eval_cbs_exemplars, use_exemplars=args.use_exemplars, add_exemplars=args.add_exemplars,
-    )
+    )'''
 
 
 if __name__ == '__main__':
