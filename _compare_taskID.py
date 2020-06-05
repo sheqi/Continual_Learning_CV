@@ -6,7 +6,6 @@ from param_stamp import get_param_stamp_from_args
 import visual_plt
 import main
 
-
 description = 'Compare two ways of using task-ID info (with different CL strategies) on permuted / split MNIST.'
 parser = argparse.ArgumentParser('./_compare_taskID.py', description=description)
 parser.add_argument('--seed', type=int, default=1, help='[first] random seed (for each random-module used)')
@@ -55,20 +54,23 @@ gen_params.add_argument('--lr-gen', type=float, help="learning rate generator (d
 
 # "memory allocation" parameters
 cl_params = parser.add_argument_group('Memory Allocation Parameters')
-cl_params.add_argument('--lambda', type=float, default=5000.,dest="ewc_lambda", help="--> EWC: regularisation strength")
+cl_params.add_argument('--lambda', type=float, default=5000., dest="ewc_lambda",
+                       help="--> EWC: regularisation strength")
 cl_params.add_argument('--o-lambda', type=float, default=5000., help="--> online EWC: regularisation strength")
 cl_params.add_argument('--fisher-n', type=int, help="--> EWC: sample size estimating Fisher Information")
 cl_params.add_argument('--gamma', type=float, default=1., help="--> EWC: forgetting coefficient (for 'online EWC')")
 cl_params.add_argument('--emp-fi', action='store_true', help="--> EWC: estimate FI with provided labels")
 cl_params.add_argument('--c', type=float, default=0.1, dest="si_c", help="--> SI: regularisation strength")
 cl_params.add_argument('--epsilon', type=float, default=0.1, dest="epsilon", help="--> SI: dampening parameter")
-cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg",help="XdG: prop neurons per layer to gate")
+cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg", help="XdG: prop neurons per layer to gate")
 
 # exemplar parameters
 exemplar_params = parser.add_argument_group('Exemplar Parameters')
 exemplar_params.add_argument('--use-exemplars', action='store_true', help="use stored exemplars for classification?")
-exemplar_params.add_argument('--budget', type=int, default=2000, dest="budget",help="how many exemplars can be stored?")
-exemplar_params.add_argument('--herding',action='store_true',help="use herding to select exemplars (instead of random)")
+exemplar_params.add_argument('--budget', type=int, default=2000, dest="budget",
+                             help="how many exemplars can be stored?")
+exemplar_params.add_argument('--herding', action='store_true',
+                             help="use herding to select exemplars (instead of random)")
 exemplar_params.add_argument('--norm-exemplars', action='store_true', help="normalize features/averages of exemplars")
 
 # evaluation parameters
@@ -77,7 +79,6 @@ eval_params.add_argument('--pdf', action='store_true', help="generate pdfs for i
 eval_params.add_argument('--visdom', action='store_true', help="use visdom for on-the-fly plots")
 eval_params.add_argument('--prec-n', type=int, default=1024, help="# samples for evaluating solver's precision")
 eval_params.add_argument('--sample-n', type=int, default=64, help="# images to show")
-
 
 
 def get_prec(args, ext=""):
@@ -110,7 +111,6 @@ def collect_all(method_dict, seed_list, args, ext="", name=None):
     return method_dict
 
 
-
 if __name__ == '__main__':
 
     ## Load input-arguments
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     args.scenario = "task"
     args.feedback = False
     args.add_exemplars = False
-    args.bce_distill= False
+    args.bce_distill = False
     args.icarl = False
     args.log_per_task = True
 
@@ -144,14 +144,13 @@ if __name__ == '__main__':
     args.singlehead = False
     # args.seed could of course also vary!
 
-    #-------------------------------------------------------------------------------------------------#
+    # -------------------------------------------------------------------------------------------------#
 
-    #--------------------------#
-    #----- RUN ALL MODELS -----#
-    #--------------------------#
+    # --------------------------#
+    # ----- RUN ALL MODELS -----#
+    # --------------------------#
 
-    seed_list = list(range(args.seed, args.seed+args.n_seeds))
-
+    seed_list = list(range(args.seed, args.seed + args.n_seeds))
 
     #########---> Task-ID only in output layer (i.e., multi-headed softmax layer)
 
@@ -198,8 +197,6 @@ if __name__ == '__main__':
     RKD = collect_all(RKD, seed_list, args, name="DGR+distill")
     args.replay = "none"
     args.distill = False
-
-
 
     #########---> Task-ID only in hidden layers (i.e., XdG)
     args.singlehead = True
@@ -249,12 +246,11 @@ if __name__ == '__main__':
     args.replay = "none"
     args.distill = False
 
+    # -------------------------------------------------------------------------------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #---------------------------#
-    #----- COLLECT RESULTS -----#
-    #---------------------------#
+    # ---------------------------#
+    # ----- COLLECT RESULTS -----#
+    # ---------------------------#
 
     ave_prec = {}
 
@@ -263,13 +259,11 @@ if __name__ == '__main__':
         ave_prec[seed] = [NONE[seed], EWC[seed], OEWC[seed], SI[seed], LWF[seed], RP[seed], RKD[seed],
                           SNONE[seed], SEWC[seed], SOEWC[seed], SSI[seed], SLWF[seed], SRP[seed], SRKD[seed]]
 
+    # -------------------------------------------------------------------------------------------------#
 
-
-    #-------------------------------------------------------------------------------------------------#
-
-    #--------------------#
-    #----- PLOTTING -----#
-    #--------------------#
+    # --------------------#
+    # ----- PLOTTING -----#
+    # --------------------#
 
     # name for plot
     plot_name = "summary-{}{}-{}".format(args.experiment, args.tasks, args.scenario)
@@ -280,10 +274,10 @@ if __name__ == '__main__':
     # select names / colors / ids
     names = ["None", "EWC", "o-EWC", "SI", "LwF", "DGR", "DGR+distil"]
     colors = ["grey", "deepskyblue", "blue", "yellowgreen", "goldenrod", "indianred", "red"]
-    base_ids = [0,1,2,3,4,5,6]
+    base_ids = [0, 1, 2, 3, 4, 5, 6]
     ids = [
         base_ids,
-        [i+len(base_ids) for i in base_ids]
+        [i + len(base_ids) for i in base_ids]
     ]
 
     # open pdf
@@ -296,27 +290,30 @@ if __name__ == '__main__':
     cis_list = []
     for id_list in ids:
         mean_list.append([np.mean([ave_prec[seed][id] for seed in seed_list]) for id in id_list])
-        if args.n_seeds>1:
-            sems_list.append([np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in id_list])
-            cis_list.append([1.96*np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in id_list])
+        if args.n_seeds > 1:
+            sems_list.append(
+                [np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in id_list])
+            cis_list.append(
+                [1.96 * np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in
+                 id_list])
     figure = visual_plt.plot_bars(mean_list, names=names, colors=colors, ylabel="average precision (after all tasks)",
-                                  title_list=title_list, top_title=title, yerr=cis_list if args.n_seeds>1 else None,
-                                  ylim=(0,1))
+                                  title_list=title_list, top_title=title, yerr=cis_list if args.n_seeds > 1 else None,
+                                  ylim=(0, 1))
     figure_list.append(figure)
 
     # print results to screen
-    print("\n\n"+"#"*70+"\n      SUMMARY RESULTS: {}\n".format(title)+"-"*70)
-    print(" "*13+"Task-ID in output layer     Task-ID in hidden layers\n"+"-"*70)
-    for i,name in enumerate(names):
+    print("\n\n" + "#" * 70 + "\n      SUMMARY RESULTS: {}\n".format(title) + "-" * 70)
+    print(" " * 13 + "Task-ID in output layer     Task-ID in hidden layers\n" + "-" * 70)
+    for i, name in enumerate(names):
         if len(seed_list) > 1:
             print("{:15s}   {:.2f} ({:.2f})                  {:.2f} ({:.2f})".format(
-                name, 100*mean_list[0][i], 100*sems_list[0][i], 100*mean_list[1][i], 100*sems_list[1][i],
+                name, 100 * mean_list[0][i], 100 * sems_list[0][i], 100 * mean_list[1][i], 100 * sems_list[1][i],
             ))
         else:
             print("{:16s}    {:.2f}                        {:.2f}".format(
-                name, 100*mean_list[0][i], 100*mean_list[1][i]
+                name, 100 * mean_list[0][i], 100 * mean_list[1][i]
             ))
-    print("#"*70)
+    print("#" * 70)
 
     # add all figures to pdf
     for figure in figure_list:

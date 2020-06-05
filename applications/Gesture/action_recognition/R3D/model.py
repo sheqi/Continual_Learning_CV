@@ -48,7 +48,7 @@ def generate_model(opt):
                 shortcut_type=opt.resnet_shortcut,
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len)
-        
+
     elif opt.model == 'resnext':
         assert opt.model_depth in [101]
 
@@ -66,7 +66,6 @@ def generate_model(opt):
 
         from models.c3d import get_fine_tuning_parameters
         if opt.model_depth == 10:
-
             model = c3d.c3d_v1(
                 sample_size=opt.sample_size,
                 sample_duration=opt.clip_len,
@@ -79,8 +78,8 @@ def generate_model(opt):
             print('loading pretrained model {}'.format(opt.pretrain_path))
             pretrain = torch.load(opt.pretrain_path, map_location='cpu')
             # assert opt.arch == pretrain['arch']
-            feature_state_dict = {key: value for key, value in pretrain['state_dict'].items() 
-                    if key not in ['module.fc.weight', 'module.fc.bias']}
+            feature_state_dict = {key: value for key, value in pretrain['state_dict'].items()
+                                  if key not in ['module.fc.weight', 'module.fc.bias']}
             state_dict = deepcopy(model.state_dict())
             state_dict.update(feature_state_dict)
             model.load_state_dict(state_dict)
@@ -99,20 +98,17 @@ def generate_model(opt):
             model = _construct_rgbdepth_model(model)
             print("[INFO]: Done. RGB-D model ready.")
 
-
-
         # Check first kernel size 
         modules = list(model.modules())
         first_conv_idx = list(filter(lambda x: isinstance(modules[x], nn.Conv3d),
-                                                   list(range(len(modules)))))[0]
+                                     list(range(len(modules)))))[0]
 
         conv_layer = modules[first_conv_idx]
-        if conv_layer.kernel_size[0]> opt.clip_len:
+        if conv_layer.kernel_size[0] > opt.clip_len:
             print("[INFO]: RGB model is used for init model")
-            model = _modify_first_conv_layer(model,int(opt.clip_len/2),1) 
+            model = _modify_first_conv_layer(model, int(opt.clip_len / 2), 1)
 
-
-        if opt.model == 'c3d':# CHECK HERE
+        if opt.model == 'c3d':  # CHECK HERE
             model.module.fc = nn.Linear(
                 model.module.fc[0].in_features, model.module.fc[0].out_features)
             model.module.fc = model.module.fc.cuda()
@@ -129,8 +125,8 @@ def generate_model(opt):
             print('loading pretrained model {}'.format(opt.pretrain_path))
             pretrain = torch.load(opt.pretrain_path, map_location='cpu')
             # assert opt.arch == pretrain['arch']
-            feature_state_dict = {key.replace('module.', ''): value for key, value in pretrain['state_dict'].items() 
-                    if key not in ['module.fc.weight', 'module.fc.bias']}
+            feature_state_dict = {key.replace('module.', ''): value for key, value in pretrain['state_dict'].items()
+                                  if key not in ['module.fc.weight', 'module.fc.bias']}
             state_dict = deepcopy(model.state_dict())
             state_dict.update(feature_state_dict)
             model.load_state_dict(state_dict)
@@ -138,7 +134,7 @@ def generate_model(opt):
 
         if opt.modality == 'RGB' and opt.model != 'c3d':
             print("[INFO]: RGB model is used for init model")
-            model = _modify_first_conv_layer(model,3,3)
+            model = _modify_first_conv_layer(model, 3, 3)
         elif opt.modality == 'Depth':
             print("[INFO]: Converting the pretrained model to Depth init model")
             model = _construct_depth_model(model)
@@ -151,25 +147,25 @@ def generate_model(opt):
         # Check first kernel size 
         modules = list(model.modules())
         first_conv_idx = list(filter(lambda x: isinstance(modules[x], nn.Conv3d),
-                                                   list(range(len(modules)))))[0]
+                                     list(range(len(modules)))))[0]
 
         conv_layer = modules[first_conv_idx]
-        if conv_layer.kernel_size[0]> opt.clip_len:
+        if conv_layer.kernel_size[0] > opt.clip_len:
             print("[INFO]: RGB model is used for init model")
-            model = _modify_first_conv_layer(model,int(opt.clip_len/2),1) 
+            model = _modify_first_conv_layer(model, int(opt.clip_len / 2), 1)
 
-
-        if opt.model == 'c3d':# CHECK HERE
+        if opt.model == 'c3d':  # CHECK HERE
             model.fc = nn.Linear(
                 model.fc[0].in_features, model.fc[0].out_features)
         else:
             model.fc = nn.Linear(model.fc.in_features,
-                                        opt.n_finetune_classes)
+                                 opt.n_finetune_classes)
 
         parameters = get_fine_tuning_parameters(model, opt.ft_begin_index)
         return model, parameters
 
     return model, model.parameters()
+
 
 def _construct_depth_model(base_model):
     # modify the first convolution kernels for Depth input
@@ -184,28 +180,27 @@ def _construct_depth_model(base_model):
     motion_length = 1
     params = [x.clone() for x in conv_layer.parameters()]
     kernel_size = params[0].size()
-    new_kernel_size = kernel_size[:1] + (1*motion_length,  ) + kernel_size[2:]
+    new_kernel_size = kernel_size[:1] + (1 * motion_length,) + kernel_size[2:]
     new_kernels = params[0].data.mean(dim=1, keepdim=True).expand(new_kernel_size).contiguous()
-
-
 
     new_conv = nn.Conv3d(1, conv_layer.out_channels, conv_layer.kernel_size, conv_layer.stride,
                          conv_layer.padding, bias=True if len(params) == 2 else False)
     new_conv.weight.data = new_kernels
     if len(params) == 2:
-        new_conv.bias.data = params[1].data # add bias if neccessary
-    layer_name = list(container.state_dict().keys())[0][:-7] # remove .weight suffix to get the layer name
+        new_conv.bias.data = params[1].data  # add bias if neccessary
+    layer_name = list(container.state_dict().keys())[0][:-7]  # remove .weight suffix to get the layer name
 
     # replace the first convlution layer
     setattr(container, layer_name, new_conv)
     return base_model
+
 
 def _construct_rgbdepth_model(base_model):
     # modify the first convolution kernels for RGB-D input
     modules = list(base_model.modules())
 
     first_conv_idx = list(filter(lambda x: isinstance(modules[x], nn.Conv3d),
-                           list(range(len(modules)))))[0]
+                                 list(range(len(modules)))))[0]
     conv_layer = modules[first_conv_idx]
     container = modules[first_conv_idx - 1]
     # modify parameters, assume the first blob contains the convolution kernels
@@ -213,7 +208,9 @@ def _construct_rgbdepth_model(base_model):
     params = [x.clone() for x in conv_layer.parameters()]
     kernel_size = params[0].size()
     new_kernel_size = kernel_size[:1] + (1 * motion_length,) + kernel_size[2:]
-    new_kernels = torch.mul(torch.cat((params[0].data, params[0].data.mean(dim=1,keepdim=True).expand(new_kernel_size).contiguous()), 1), 0.6)
+    new_kernels = torch.mul(
+        torch.cat((params[0].data, params[0].data.mean(dim=1, keepdim=True).expand(new_kernel_size).contiguous()), 1),
+        0.6)
     new_kernel_size = kernel_size[:1] + (3 + 1 * motion_length,) + kernel_size[2:]
     new_conv = nn.Conv3d(4, conv_layer.out_channels, conv_layer.kernel_size, conv_layer.stride,
                          conv_layer.padding, bias=True if len(params) == 2 else False)
@@ -226,15 +223,16 @@ def _construct_rgbdepth_model(base_model):
     setattr(container, layer_name, new_conv)
     return base_model
 
+
 def _modify_first_conv_layer(base_model, new_kernel_size1, new_filter_num):
     modules = list(base_model.modules())
     first_conv_idx = list(filter(lambda x: isinstance(modules[x], nn.Conv3d),
-                                               list(range(len(modules)))))[0]
+                                 list(range(len(modules)))))[0]
     conv_layer = modules[first_conv_idx]
     container = modules[first_conv_idx - 1]
- 
-    new_conv = nn.Conv3d(new_filter_num, conv_layer.out_channels, kernel_size=(new_kernel_size1,7,7),
-                         stride=(1,2,2), padding=(1,3,3), bias=False)
+
+    new_conv = nn.Conv3d(new_filter_num, conv_layer.out_channels, kernel_size=(new_kernel_size1, 7, 7),
+                         stride=(1, 2, 2), padding=(1, 3, 3), bias=False)
     layer_name = list(container.state_dict().keys())[0][:-7]
 
     setattr(container, layer_name, new_conv)

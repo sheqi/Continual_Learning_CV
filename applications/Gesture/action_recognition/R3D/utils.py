@@ -5,23 +5,17 @@ import pdb
 import numpy as np
 
 
-
-
 def load_checkpoint(save_dir, filename):
     checkpoint = torch.load(os.path.join(save_dir, filename), map_location='cpu')
     return checkpoint
 
+
 def save_checkpoint(net, optimizer, step, save_dir, filename):
     checkpoint = {
-            'state_dict': net.state_dict(),
-            'step': step,
-            'optimizer' : optimizer.state_dict()}
+        'state_dict': net.state_dict(),
+        'step': step,
+        'optimizer': optimizer.state_dict()}
     torch.save(checkpoint, os.path.join(save_dir, filename))
-
-
-
-
-
 
 
 def adjust_learning_rate(learning_rate, optimizer, epoch, lr_steps):
@@ -29,8 +23,6 @@ def adjust_learning_rate(learning_rate, optimizer, epoch, lr_steps):
     lr_new = learning_rate * (0.1 ** (sum(epoch >= np.array(lr_steps))))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr_new
-
-
 
 
 class AverageMeter(object):
@@ -127,4 +119,4 @@ def calculate_precision(outputs, targets):
 
     _, pred = outputs.topk(1, 1, True)
     pred = pred.t()
-    return  precision_score(targets.view(-1).cpu().numpy(), pred.view(-1).cpu().numpy(), average = 'macro')
+    return precision_score(targets.view(-1).cpu().numpy(), pred.view(-1).cpu().numpy(), average='macro')

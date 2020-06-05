@@ -6,7 +6,6 @@ import visual_plt
 import numpy as np
 import main
 
-
 description = 'Evaluate variants of "exact replay" as function of available memory budget.'
 parser = argparse.ArgumentParser('./_compare_replay.py', description=description)
 parser.add_argument('--seed', type=int, default=1, help='[first] random seed (for each random-module used)')
@@ -34,7 +33,7 @@ model_params.add_argument('--fc-drop', type=float, default=0., help="dropout pro
 model_params.add_argument('--fc-bn', type=str, default="no", help="use batch-norm in the fc-layers (no|yes)")
 model_params.add_argument('--fc-nl', type=str, default="relu", choices=["relu", "leakyrelu"])
 model_params.add_argument('--singlehead', action='store_true', help="for Task-IL: use a 'single-headed' output layer   "
-                                                                   " (instead of a 'multi-headed' one)")
+                                                                    " (instead of a 'multi-headed' one)")
 
 # training hyperparameters / initialization
 train_params = parser.add_argument_group('Training Parameters')
@@ -69,15 +68,12 @@ eval_params.add_argument('--visdom', action='store_true', help="use visdom for o
 eval_params.add_argument('--prec-n', type=int, default=1024, help="# samples for evaluating solver's precision")
 eval_params.add_argument('--sample-n', type=int, default=64, help="# images to show")
 
-
 ## Load input-arguments
 args = parser.parse_args()
-
 
 ## Memory budget values to compare
 budget_list_permMNIST = [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]
 budget_list_splitMNIST = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000]
-
 
 
 def get_prec(args, ext=""):
@@ -110,8 +106,6 @@ def collect_all(method_dict, seed_list, args, ext="", name=None):
     return method_dict
 
 
-
-
 if __name__ == '__main__':
 
     ## Load input-arguments
@@ -129,7 +123,7 @@ if __name__ == '__main__':
         os.mkdir(args.p_dir)
 
     ## Select correct memory budget list
-    budget_list = budget_list_permMNIST if args.experiment=="permMNIST" else budget_list_splitMNIST
+    budget_list = budget_list_permMNIST if args.experiment == "permMNIST" else budget_list_splitMNIST
 
     ## Add non-optional input argument that will be the same for all runs
     args.ewc = False
@@ -149,23 +143,19 @@ if __name__ == '__main__':
     args.bce_distill = False
     # args.seed could of course also vary!
 
+    # -------------------------------------------------------------------------------------------------#
 
+    # --------------------------#
+    # ----- RUN ALL MODELS -----#
+    # --------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #--------------------------#
-    #----- RUN ALL MODELS -----#
-    #--------------------------#
-
-    seed_list = list(range(args.seed, args.seed+args.n_seeds))
-
+    seed_list = list(range(args.seed, args.seed + args.n_seeds))
 
     ###### BASELINE #########
 
     args.replay = "none"
     BASE = {}
     BASE = collect_all(BASE, seed_list, args, name="None")
-
 
     ###### GENERATIVE REPLAY #########
 
@@ -176,7 +166,6 @@ if __name__ == '__main__':
     args.distill = True
     DGRD = {}
     DGRD = collect_all(DGRD, seed_list, args, name="DGR + distill")
-
 
     ###### EXACT REPLAY VARIANTS #########
 
@@ -211,7 +200,7 @@ if __name__ == '__main__':
                                    name="Replay Stored Data & Classify with Exemplars - budget = {}".format(budget))
 
     ## iCaRL (except not necessarily with "herding" and "norm_exemplars")!
-    if args.scenario=="class":
+    if args.scenario == "class":
         args.replay = "none"
         args.use_exemplars = True
         args.bce = True
@@ -224,12 +213,11 @@ if __name__ == '__main__':
             ICARL[budget] = collect_all(ICARL[budget], seed_list, args,
                                         name="iCaRL - budget = {}".format(budget))
 
+    # -------------------------------------------------------------------------------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #--------------------#
-    #----- PLOTTING -----#
-    #--------------------#
+    # --------------------#
+    # ----- PLOTTING -----#
+    # --------------------#
 
     # name for plot
     plot_name = "summaryGenRep-{}{}-{}".format(args.experiment, args.tasks, args.scenario)
@@ -241,19 +229,19 @@ if __name__ == '__main__':
     figure_list = []
 
     # set scale of y-axis
-    y_lim = [0,1] if args.scenario=="class" else None
+    y_lim = [0, 1] if args.scenario == "class" else None
 
     # Methods for comparison
     h_lines = [np.mean([BASE[seed] for seed in seed_list])]
     h_lines.append(np.mean([DGR[seed] for seed in seed_list]))
     h_lines.append(np.mean([DGRD[seed] for seed in seed_list]))
-    h_errors = [np.sqrt(np.var([BASE[seed] for seed in seed_list]) / (len(seed_list)-1))] if args.n_seeds>1 else None
-    if args.n_seeds>1:
+    h_errors = [
+        np.sqrt(np.var([BASE[seed] for seed in seed_list]) / (len(seed_list) - 1))] if args.n_seeds > 1 else None
+    if args.n_seeds > 1:
         h_errors.append(np.sqrt(np.var([DGR[seed] for seed in seed_list]) / (len(seed_list) - 1)))
         h_errors.append(np.sqrt(np.var([DGRD[seed] for seed in seed_list]) / (len(seed_list) - 1)))
     h_labels = ["None", "DGR", "DGR+distill"]
     h_colors = ["grey", "indianred", "red"]
-
 
     # Different variants of exact replay
     # -prepare
@@ -263,7 +251,7 @@ if __name__ == '__main__':
     sem_EXU = []
     ave_EXRU = []
     sem_EXRU = []
-    if args.scenario=="class":
+    if args.scenario == "class":
         ave_ICARL = []
         sem_ICARL = []
 
@@ -283,7 +271,7 @@ if __name__ == '__main__':
         if args.n_seeds > 1:
             sem_EXRU.append(np.sqrt(np.var(all_entries) / (len(all_entries) - 1)))
 
-        if args.scenario=="class":
+        if args.scenario == "class":
             all_entries = [ICARL[budget][seed] for seed in seed_list]
             ave_ICARL.append(np.mean(all_entries))
             if args.n_seeds > 1:
@@ -294,11 +282,11 @@ if __name__ == '__main__':
     errors = [sem_EXR, sem_EXU, sem_EXRU] if args.n_seeds > 1 else None
     line_names = ["Replay exemplars", "Classify with exemplars", "Replay & classify with exemplars"]
     colors = ["black", "grey", "darkgrey"]
-    if args.scenario=="class":
+    if args.scenario == "class":
         lines.append(ave_ICARL)
         line_names.append("iCaRL")
         colors.append("brown")
-        if args.n_seeds>1:
+        if args.n_seeds > 1:
             errors.append(sem_ICARL)
 
     # -plot
@@ -308,7 +296,6 @@ if __name__ == '__main__':
         h_lines=h_lines, h_errors=h_errors, h_labels=h_labels, h_colors=h_colors,
     )
     figure_list.append(figure)
-
 
     # add figures to pdf
     for figure in figure_list:

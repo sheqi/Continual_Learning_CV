@@ -24,6 +24,7 @@ class BatchNorm2dReimpl(nn.Module):
     See also:
     https://github.com/vacancy/Synchronized-BatchNorm-PyTorch/issues/14
     """
+
     def __init__(self, num_features, eps=1e-5, momentum=0.1):
         super().__init__()
 
@@ -71,4 +72,3 @@ class BatchNorm2dReimpl(nn.Module):
                 self.weight.unsqueeze(1) + self.bias.unsqueeze(1))
 
         return output.view(channels, batchsize, height, width).permute(1, 0, 2, 3).contiguous()
-

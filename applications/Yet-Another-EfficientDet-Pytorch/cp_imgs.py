@@ -3,7 +3,9 @@
 
 import os
 import shutil
-#import pandas as pd
+
+
+# import pandas as pd
 
 # create a directory
 def mkdir(path):
@@ -33,8 +35,9 @@ def mkdir(path):
         print(path + ' 目录已存在')
         return False
 
+
 # cp imgs of a certain cls from file_dir to dst_dir
-def cp_imgs_with_tags(cls_name, cls_num, file_dir, dst_dir, score_thre = 5):
+def cp_imgs_with_tags(cls_name, cls_num, file_dir, dst_dir, score_thre=5):
     # cls need to be changed
     # create the filename for saving files
     file_list = os.listdir(file_dir)
@@ -49,16 +52,15 @@ def cp_imgs_with_tags(cls_name, cls_num, file_dir, dst_dir, score_thre = 5):
     csv_path = 'D:\\Code\\nima.pytorch-py3.7\\nima\\iqa_results.csv'
     ava_df = pd.read_csv(csv_path, sep=',')
 
-    img_id = ava_df.iloc[:,0]
+    img_id = ava_df.iloc[:, 0]
     img_score = ava_df.iloc[:, 4]
-    t1 = ava_df.iloc[:,6]
-    t2 = ava_df.iloc[:,7]
+    t1 = ava_df.iloc[:, 6]
+    t2 = ava_df.iloc[:, 7]
 
-
-    dst_cls_id = img_id[(t1==cls_num)|(t2==cls_num)]
+    dst_cls_id = img_id[(t1 == cls_num) | (t2 == cls_num)]
     # dst_cls_img_score = img_score[(t1==cls_num)|(t2==cls_num)]
 
-    dst_cls_id_high = dst_cls_id[img_score>score_thre]
+    dst_cls_id_high = dst_cls_id[img_score > score_thre]
     # dst_cls_img_score_high = dst_cls_img_score[img_score>score_thre]
 
     dst_cls_id_list = dst_cls_id_high
@@ -76,8 +78,8 @@ def cp_imgs_with_tags(cls_name, cls_num, file_dir, dst_dir, score_thre = 5):
 def cp_imgs_from_files(filename_lst, img_dir, dst_dir):
     for filename in filename_lst:
         imgname = filename.strip()
-        img_path = os.path.join(img_dir, imgname+'.jpg')
-        dst_path = os.path.join(dst_dir, imgname+'.jpg')
+        img_path = os.path.join(img_dir, imgname + '.jpg')
+        dst_path = os.path.join(dst_dir, imgname + '.jpg')
 
         print('imgname:', imgname)
         print('imgpath:', img_path)
@@ -85,9 +87,9 @@ def cp_imgs_from_files(filename_lst, img_dir, dst_dir):
 
         shutil.copy(img_path, dst_path)
 
+
 # main function
 if __name__ == '__main__':
-
     train_set_list = ['trainvalStep0', 'trainvalStep1', 'trainvalStep2', 'trainvalStep3']
     test_set_list = ['testStep0', 'testStep1', 'testStep2', 'testStep3']
 
@@ -108,4 +110,3 @@ if __name__ == '__main__':
     # cp the file in the filename_lst from src to destination
     cp_imgs_from_files(train_filename_lst, img_dir, train_dst_dir)
     cp_imgs_from_files(test_filename_lst, img_dir, test_dst_dir)
-

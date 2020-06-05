@@ -28,7 +28,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument('-p', '--project', type=str, default='coco', help='project file that contains parameters')
 ap.add_argument('-c', '--compound_coef', type=int, default=0, help='coefficients of efficientdet')
 ap.add_argument('-w', '--weights', type=str, default=None, help='/path/to/weights')
-ap.add_argument('--nms_threshold', type=float, default=0.5, help='nms threshold, don\'t change it if not for testing purposes')
+ap.add_argument('--nms_threshold', type=float, default=0.5,
+                help='nms threshold, don\'t change it if not for testing purposes')
 ap.add_argument('--cuda', type=bool, default=True)
 ap.add_argument('--device', type=int, default=0)
 ap.add_argument('--float16', type=bool, default=False)
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     MAX_IMAGES = 10000
     coco_gt = COCO(VAL_GT)
     image_ids = coco_gt.getImgIds()[:MAX_IMAGES]
-    
+
     if override_prev_results or not os.path.exists(f'{SET_NAME}_bbox_results.json'):
         model = EfficientDetBackbone(compound_coef=compound_coef, num_classes=len(obj_list),
                                      ratios=eval(params['anchors_ratios']), scales=eval(params['anchors_scales']))

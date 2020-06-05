@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import scipy
 from PIL import Image, ImageOps
+
 try:
     import accimage
 except ImportError:
@@ -384,12 +385,12 @@ class SpatialElasticDisplacement(object):
         if self.p < 0.50:
             is_L = False
             is_PIL = isinstance(img, Image.Image)
-            
+
             if is_PIL:
                 img = np.asarray(img, dtype=np.uint8)
             if len(img.shape) == 2:
                 is_L = True
-                img = np.reshape(img, img.shape + (1,))  
+                img = np.reshape(img, img.shape + (1,))
 
             image = img
             image_first_channel = np.squeeze(image[..., 0])
@@ -402,9 +403,9 @@ class SpatialElasticDisplacement(object):
                 cval=self.cval,
                 mode=self.mode))
 
-            if  is_PIL:
+            if is_PIL:
                 if is_L:
-                    return Image.fromarray(ret_image.reshape(ret_image.shape[:2]), mode= 'L')
+                    return Image.fromarray(ret_image.reshape(ret_image.shape[:2]), mode='L')
                 else:
                     return Image.fromarray(ret_image)
             else:
@@ -413,15 +414,15 @@ class SpatialElasticDisplacement(object):
             return img
 
     def _generate_indices(self, shape, alpha, sigma):
-        assert (len(shape) == 2),"shape: Should be of size 2!"
+        assert (len(shape) == 2), "shape: Should be of size 2!"
         dx = scipy.ndimage.gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
         dy = scipy.ndimage.gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
 
         x, y = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), indexing='ij')
-        return np.reshape(x+dx, (-1, 1)), np.reshape(y+dy, (-1, 1))
+        return np.reshape(x + dx, (-1, 1)), np.reshape(y + dy, (-1, 1))
 
     def _map_coordinates(self, image, indices_x, indices_y, order=1, cval=0, mode="constant"):
-        assert (len(image.shape) == 3),"image.shape: Should be of size 3!"
+        assert (len(image.shape) == 3), "image.shape: Should be of size 3!"
         result = np.copy(image)
         height, width = image.shape[0:2]
         for c in range(image.shape[2]):
@@ -437,4 +438,4 @@ class SpatialElasticDisplacement(object):
         return result
 
     def randomize_parameters(self):
-       self.p = random.random()
+        self.p = random.random()

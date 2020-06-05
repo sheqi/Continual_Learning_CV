@@ -3,8 +3,8 @@ import argparse
 import os
 import numpy as np
 from param_stamp import get_param_stamp_from_args
+import visual_plt
 import main
-
 
 description = 'Compare performance of CL strategies on each scenario of permuted or split MNIST.'
 parser = argparse.ArgumentParser('./_compare.py', description=description)
@@ -33,7 +33,7 @@ model_params.add_argument('--fc-drop', type=float, default=0., help="dropout pro
 model_params.add_argument('--fc-bn', type=str, default="no", help="use batch-norm in the fc-layers (no|yes)")
 model_params.add_argument('--fc-nl', type=str, default="relu", choices=["relu", "leakyrelu"])
 model_params.add_argument('--singlehead', action='store_true', help="for Task-IL: use a 'single-headed' output layer   "
-                                                                   " (instead of a 'multi-headed' one)")
+                                                                    " (instead of a 'multi-headed' one)")
 
 # training hyperparameters / initialization
 train_params = parser.add_argument_group('Training Parameters')
@@ -57,14 +57,15 @@ gen_params.add_argument('--lr-gen', type=float, help="learning rate generator (d
 
 # "memory allocation" parameters
 cl_params = parser.add_argument_group('Memory Allocation Parameters')
-cl_params.add_argument('--lambda', type=float, default=5000.,dest="ewc_lambda", help="--> EWC: regularisation strength")
+cl_params.add_argument('--lambda', type=float, default=5000., dest="ewc_lambda",
+                       help="--> EWC: regularisation strength")
 cl_params.add_argument('--o-lambda', type=float, default=5000., help="--> online EWC: regularisation strength")
 cl_params.add_argument('--fisher-n', type=int, help="--> EWC: sample size estimating Fisher Information")
 cl_params.add_argument('--gamma', type=float, default=1., help="--> EWC: forgetting coefficient (for 'online EWC')")
 cl_params.add_argument('--emp-fi', action='store_true', help="--> EWC: estimate FI with provided labels")
 cl_params.add_argument('--c', type=float, default=0.1, dest="si_c", help="--> SI: regularisation strength")
 cl_params.add_argument('--epsilon', type=float, default=0.1, dest="epsilon", help="--> SI: dampening parameter")
-cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg",help="XdG: prop neurons per layer to gate")
+cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg", help="XdG: prop neurons per layer to gate")
 
 # iCaRL parameters
 icarl_params = parser.add_argument_group('iCaRL Parameters')
@@ -76,9 +77,9 @@ icarl_params.add_argument('--use-exemplars', action='store_true', help="use stor
 # evaluation parameters
 eval_params = parser.add_argument_group('Evaluation Parameters')
 eval_params.add_argument('--pdf', action='store_true', help="generate pdfs for individual experiments")
+eval_params.add_argument('--visdom', action='store_true', help="use visdom for on-the-fly plots")
 eval_params.add_argument('--prec-n', type=int, default=1024, help="# samples for evaluating solver's precision")
 eval_params.add_argument('--sample-n', type=int, default=64, help="# images to show")
-
 
 
 def get_prec(args, ext=""):
@@ -111,7 +112,6 @@ def collect_all(method_dict, seed_list, args, ext="", name=None):
     return method_dict
 
 
-
 if __name__ == '__main__':
 
     ## Load input-arguments
@@ -139,18 +139,17 @@ if __name__ == '__main__':
     args.si = False
     args.gating_prop = 0.
     args.add_exemplars = False
-    args.bce_distill= False
+    args.bce_distill = False
     args.icarl = False
     # args.seed could of course also vary!
 
-    #-------------------------------------------------------------------------------------------------#
+    # -------------------------------------------------------------------------------------------------#
 
-    #--------------------------#
-    #----- RUN ALL MODELS -----#
-    #--------------------------#
+    # --------------------------#
+    # ----- RUN ALL MODELS -----#
+    # --------------------------#
 
-    seed_list = list(range(args.seed, args.seed+args.n_seeds))
-
+    seed_list = list(range(args.seed, args.seed + args.n_seeds))
 
     ###----"BASELINES"----###
 
@@ -164,16 +163,14 @@ if __name__ == '__main__':
     NONE = {}
     NONE = collect_all(NONE, seed_list, args, name="None")
 
-
     ###----"TASK-SPECIFIC"----####
 
     ## XdG
-    if args.scenario=="task":
+    if args.scenario == "task":
         args.gating_prop = args.xdg
         XDG = {}
         XDG = collect_all(XDG, seed_list, args, name="XdG")
         args.gating_prop = 0.
-
 
     ###----"REGULARIZATION"----####
 
@@ -196,7 +193,6 @@ if __name__ == '__main__':
     SI = collect_all(SI, seed_list, args, name="SI")
     args.si = False
 
-
     ###----"REPLAY"----###
 
     ## LwF
@@ -217,12 +213,11 @@ if __name__ == '__main__':
     RKD = {}
     RKD = collect_all(RKD, seed_list, args, name="DGR+distill")
     args.replay = "none"
-    
 
     ###----"EXEMPLARS + REPLAY"----####
 
     ## iCaRL
-    if args.scenario=="class":
+    if args.scenario == "class":
         args.bce = True
         args.bce_distill = True
         args.use_exemplars = True
@@ -232,30 +227,27 @@ if __name__ == '__main__':
         ICARL = {}
         ICARL = collect_all(ICARL, seed_list, args, name="iCaRL")
 
+    # -------------------------------------------------------------------------------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #---------------------------#
-    #----- COLLECT RESULTS -----#
-    #---------------------------#
+    # ---------------------------#
+    # ----- COLLECT RESULTS -----#
+    # ---------------------------#
 
     ave_prec = {}
 
     ## For each seed, create list with average precisions
     for seed in seed_list:
         ave_prec[seed] = [NONE[seed], OFF[seed], EWC[seed], OEWC[seed], SI[seed], LWF[seed], RP[seed], RKD[seed]]
-        if args.scenario=="task":
+        if args.scenario == "task":
             ave_prec[seed].append(XDG[seed])
-        elif args.scenario=="class":
+        elif args.scenario == "class":
             ave_prec[seed].append(ICARL[seed])
 
+    # -------------------------------------------------------------------------------------------------#
 
-
-    #-------------------------------------------------------------------------------------------------#
-
-    #--------------------#
-    #----- PLOTTING -----#
-    #--------------------#
+    # --------------------#
+    # ----- PLOTTING -----#
+    # --------------------#
 
     # name for plot
     plot_name = "summary-{}{}-{}".format(args.experiment, args.tasks, args.scenario)
@@ -266,14 +258,14 @@ if __name__ == '__main__':
     names = ["None"]
     colors = ["grey"]
     ids = [0]
-    if args.scenario=="task":
+    if args.scenario == "task":
         names.append("XdG")
         colors.append("purple")
         ids.append(8)
     names += ["EWC", "o-EWC", "SI", "LwF", "DGR", "DGR+distil"]
     colors += ["deepskyblue", "blue", "yellowgreen", "goldenrod", "indianred", "red"]
-    ids += [2,3,4,5,6,7]
-    if args.scenario=="class":
+    ids += [2, 3, 4, 5, 6, 7]
+    if args.scenario == "class":
         names.append("iCaRL")
         colors.append("violet")
         ids.append(8)
@@ -287,21 +279,21 @@ if __name__ == '__main__':
 
     # bar-plot
     means = [np.mean([ave_prec[seed][id] for seed in seed_list]) for id in ids]
-    if len(seed_list)>1:
-        sems = [np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in ids]
-        cis = [1.96*np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in ids]
+    if len(seed_list) > 1:
+        sems = [np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in ids]
+        cis = [1.96 * np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in ids]
     figure = visual_plt.plot_bar(means, names=names, colors=colors, ylabel="average precision (after all tasks)",
-                                 title=title, yerr=cis if len(seed_list)>1 else None, ylim=(0,1))
+                                 title=title, yerr=cis if len(seed_list) > 1 else None, ylim=(0, 1))
     figure_list.append(figure)
 
     # print results to screen
-    print("\n\n"+"#"*60+"\nSUMMARY RESULTS: {}\n".format(title)+"-"*60)
-    for i,name in enumerate(names):
+    print("\n\n" + "#" * 60 + "\nSUMMARY RESULTS: {}\n".format(title) + "-" * 60)
+    for i, name in enumerate(names):
         if len(seed_list) > 1:
-            print("{:12s} {:.2f}  (+/- {:.2f}),  n={}".format(name, 100*means[i], 100*sems[i], len(seed_list)))
+            print("{:12s} {:.2f}  (+/- {:.2f}),  n={}".format(name, 100 * means[i], 100 * sems[i], len(seed_list)))
         else:
-            print("{:12s} {:.2f}".format(name, 100*means[i]))
-    print("#"*60)
+            print("{:12s} {:.2f}".format(name, 100 * means[i]))
+    print("#" * 60)
 
     # add all figures to pdf
     for figure in figure_list:

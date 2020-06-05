@@ -56,8 +56,9 @@ def get_args():
     parser.add_argument('-w', '--load_weights', type=str, default=None,
                         help='whether to load weights from a checkpoint, set None to initialize, set \'last\' to load last checkpoint')
     parser.add_argument('--saved_path', type=str, default='logs/')
-    parser.add_argument('--debug', type=boolean_string, default=False, help='whether visualize the predicted boxes of training, '
-                                                                  'the output images will be in test/')
+    parser.add_argument('--debug', type=boolean_string, default=False,
+                        help='whether visualize the predicted boxes of training, '
+                             'the output images will be in test/')
 
     args = parser.parse_args()
     return args
@@ -312,7 +313,7 @@ def train(opt):
                     save_checkpoint(model, f'efficientdet-d{opt.compound_coef}_{epoch}_{step}.pth')
 
                 model.train()
-                           
+
                 # Early stopping
                 if epoch - best_epoch > opt.es_patience > 0:
                     print('[Info] Stop training at epoch {}. The lowest loss achieved is {}'.format(epoch, best_loss))

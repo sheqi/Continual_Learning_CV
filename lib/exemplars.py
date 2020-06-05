@@ -9,13 +9,14 @@ import numpy as np
 
 class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
     """Abstract  module for a classifier that can store and use exemplars.
+
     Adds a exemplar-methods to subclasses, and requires them to provide a 'feature-extractor' method."""
 
     def __init__(self):
         super().__init__()
 
         # list with exemplar-sets
-        self.exemplar_sets = []   #--> each exemplar_set is an <np.array> of N images with shape (N, Ch, H, W)
+        self.exemplar_sets = []  # --> each exemplar_set is an <np.array> of N images with shape (N, Ch, H, W)
         self.exemplar_means = []
         self.compute_means = True
 
@@ -34,7 +35,6 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
     def feature_extractor(self, images):
         pass
 
-
     ####----MANAGING EXEMPLAR SETS----####
 
     def reduce_exemplar_sets(self, m):
@@ -43,6 +43,7 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
 
     def construct_exemplar_set(self, dataset, n):
         '''Construct set of [n] exemplars from [dataset] using 'herding'.
+
         Note that [dataset] should be from specific class; selected sets are added to [self.exemplar_sets] in order.'''
 
         # set model to eval()-mode
@@ -77,9 +78,9 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
             exemplar_features = torch.zeros_like(features[:min(n, n_max)])
             list_of_selected = []
             for k in range(min(n, n_max)):
-                if k>0:
+                if k > 0:
                     exemplar_sum = torch.sum(exemplar_features[:k], dim=0).unsqueeze(0)
-                    features_means = (features + exemplar_sum)/(k+1)
+                    features_means = (features + exemplar_sum) / (k + 1)
                     # if self.norm_exemplars:
                     #     # perhaps this normalization should be left out??
                     #     features_means = F.normalize(features_means, p=2, dim=1)
@@ -107,13 +108,14 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
         # set mode of model back
         self.train(mode=mode)
 
-
     ####----CLASSIFICATION----####
 
     def classify_with_exemplars(self, x, allowed_classes=None):
         """Classify images by nearest-means-of-exemplars (after transform to feature representation)
+
         INPUT:      x = <tensor> of size (bsz,ich,isz,isz) with input image batch
                     allowed_classes = None or <list> containing all "active classes" between which should be chosen
+
         OUTPUT:     preds = <tensor> of size (bsz,)"""
 
         # Set model to eval()-mode
@@ -124,7 +126,7 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
 
         # Do the exemplar-means need to be recomputed?
         if self.compute_means:
-            exemplar_means = []  #--> list of 1D-tensors (of size [feature_size]), list is of length [n_classes]
+            exemplar_means = []  # --> list of 1D-tensors (of size [feature_size]), list is of length [n_classes]
             for P_y in self.exemplar_sets:
                 exemplars = []
                 # Collect all exemplars in P_y into a <tensor> and extract their features
@@ -141,7 +143,7 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
                 mu_y = features.mean(dim=0, keepdim=True)
                 if self.norm_exemplars:
                     mu_y = F.normalize(mu_y, p=2, dim=1)
-                exemplar_means.append(mu_y.squeeze())       # -> squeeze removes all dimensions of size 1
+                exemplar_means.append(mu_y.squeeze())  # -> squeeze removes all dimensions of size 1
             # Update model's attributes
             self.exemplar_means = exemplar_means
             self.compute_means = False
@@ -150,17 +152,17 @@ class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):
         exemplar_means = self.exemplar_means if allowed_classes is None else [
             self.exemplar_means[i] for i in allowed_classes
         ]
-        means = torch.stack(exemplar_means)        # (n_classes, feature_size)
+        means = torch.stack(exemplar_means)  # (n_classes, feature_size)
         means = torch.stack([means] * batch_size)  # (batch_size, n_classes, feature_size)
-        means = means.transpose(1, 2)              # (batch_size, feature_size, n_classes)
+        means = means.transpose(1, 2)  # (batch_size, feature_size, n_classes)
 
         # Extract features for input data (and reorganize)
         with torch.no_grad():
-            feature = self.feature_extractor(x)    # (batch_size, feature_size)
+            feature = self.feature_extractor(x)  # (batch_size, feature_size)
         if self.norm_exemplars:
             feature = F.normalize(feature, p=2, dim=1)
-        feature = feature.unsqueeze(2)             # (batch_size, feature_size, 1)
-        feature = feature.expand_as(means)         # (batch_size, feature_size, n_classes)
+        feature = feature.unsqueeze(2)  # (batch_size, feature_size, 1)
+        feature = feature.expand_as(means)  # (batch_size, feature_size, n_classes)
 
         # For each data-point in [x], find which exemplar-mean is closest to its extracted features
         dists = (feature - means).pow(2).sum(dim=1).squeeze()  # (batch_size, n_classes)

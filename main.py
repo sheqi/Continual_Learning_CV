@@ -11,8 +11,10 @@ import pickle
 import torch
 from torch import optim
 
+import utils
 from param_stamp import get_param_stamp, get_param_stamp_from_args
 import evaluate
+from data import get_multitask_experiment
 from lib.encoder import Classifier
 from lib.vae_models import AutoEncoder
 import lib.callbacks as cb
@@ -20,15 +22,19 @@ from lib.train import train_cl
 from lib.continual_learner import ContinualLearner
 from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
+import lib.visual_plt
 
-EXPERIMENT = 'OpenLORIS'
+EXPERIMENT = 'mydataset'
+VISDOM = VISDOM_EXEMPLARS = None
 SEED = 7
-RESULT_DIR = './Results'
+RESULT_DIR = './results1'
 SCENARIO = 'domain'
+# use binary (instead of multi-class) classication loss
+# BCE = True
 # size of latent representation
 Z_DIM = 100
 
-parser = argparse.ArgumentParser('./main.py')
+parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--factor', type=str, default='clutter', dest='factor')
@@ -123,6 +129,7 @@ def run(args):
     if not os.path.isdir(RESULT_DIR):
         os.mkdir(RESULT_DIR)
 
+    scenario = SCENARIO
     # (but note that when XdG is used, task-identity information is being used so the actual scenario is still Task-IL)
 
     # If only want param-stamp, get it printed to screen and exit
@@ -275,6 +282,7 @@ def run(args):
         replay_model_name=generator.name if (args.replay == "generative" and not args.feedback) else None,
     )
 
+    # Prepare for plotting in visdom
     # -define [precision_dict] to keep track of performance during training for storing and for later plotting in pdf
     precision_dict = evaluate.initiate_precision_dict(args.tasks)
     precision_dict_exemplars = evaluate.initiate_precision_dict(args.tasks) if args.use_exemplars else None
@@ -285,24 +293,25 @@ def run(args):
 
     # Callbacks for reporting on and visualizing loss
     generator_loss_cbs = [
-        cb._VAE_loss_cb(log=args.loss_log, model=model if args.feedback else generator, tasks=args.tasks,
+        cb._VAE_loss_cb(log=args.loss_log, visdom=VISDOM, model=model if args.feedback else generator, tasks=args.tasks,
                         iters_per_task=args.iters if args.feedback else args.g_iters,
                         replay=False if args.replay == "none" else True)
     ] if (train_gen or args.feedback) else [None]
     solver_loss_cbs = [
-        cb._solver_loss_cb(log=args.loss_log, model=model, tasks=args.tasks,
+        cb._solver_loss_cb(log=args.loss_log, visdom=VISDOM, model=model, tasks=args.tasks,
                            iters_per_task=args.iters, replay=False if args.replay == "none" else True)
     ] if (not args.feedback) else [None]
 
     # Callbacks for evaluating and plotting generated / reconstructed samples
     sample_cbs = [
-        cb._sample_cb(log=args.sample_log, config=config, test_datasets=test_datasets,
+        cb._sample_cb(log=args.sample_log, visdom=VISDOM, config=config, test_datasets=test_datasets,
                       sample_size=args.sample_n, iters_per_task=args.iters if args.feedback else args.g_iters)
     ] if (train_gen or args.feedback) else [None]
 
     # Callbacks for reporting and visualizing accuracy
+    # -visdom (i.e., after each [prec_log]
     eval_cb = cb._eval_cb(
-        log=args.prec_log, test_datasets=test_datasets, precision_dict=None, iters_per_task=args.iters,
+        log=args.prec_log, test_datasets=test_datasets, visdom=VISDOM, precision_dict=None, iters_per_task=args.iters,
         test_size=args.prec_n, classes_per_task=classes_per_task, scenario=SCENARIO,
     )
     # -pdf / reporting: summary plots (i.e, only after each task)
@@ -310,15 +319,17 @@ def run(args):
         log=args.iters, test_datasets=test_datasets, precision_dict=precision_dict,
         iters_per_task=args.iters, classes_per_task=classes_per_task, scenario=SCENARIO,
     )
-
+    # -with exemplars (both for visdom & reporting / pdf)
     eval_cb_exemplars = cb._eval_cb(
-        log=args.iters, test_datasets=test_datasets, classes_per_task=classes_per_task,
+        log=args.iters, test_datasets=test_datasets, visdom=VISDOM_EXEMPLARS, classes_per_task=classes_per_task,
         precision_dict=precision_dict_exemplars, scenario=SCENARIO, iters_per_task=args.iters,
         with_exemplars=True,
     ) if args.use_exemplars else None
     # -collect them in <lists>
     eval_cbs = [eval_cb, eval_cb_full]
     eval_cbs_exemplars = [eval_cb_exemplars]
+
+    # -------------------------------------------------------------------------------------------------#
 
     # --------------------#
     # ----- TRAINING -----#

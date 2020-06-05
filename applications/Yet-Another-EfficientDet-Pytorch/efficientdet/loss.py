@@ -52,38 +52,38 @@ class FocalLoss(nn.Module):
             bbox_annotation = bbox_annotation[bbox_annotation[:, 4] != -1]
 
             classification = torch.clamp(classification, 1e-4, 1.0 - 1e-4)
-            
+
             if bbox_annotation.shape[0] == 0:
                 if torch.cuda.is_available():
-                    
+
                     alpha_factor = torch.ones_like(classification) * alpha
                     alpha_factor = alpha_factor.cuda()
                     alpha_factor = 1. - alpha_factor
                     focal_weight = classification
                     focal_weight = alpha_factor * torch.pow(focal_weight, gamma)
-                    
+
                     bce = -(torch.log(1.0 - classification))
-                    
+
                     cls_loss = focal_weight * bce
-                    
+
                     regression_losses.append(torch.tensor(0).to(dtype).cuda())
                     classification_losses.append(cls_loss.sum())
                 else:
-                    
+
                     alpha_factor = torch.ones_like(classification) * alpha
                     alpha_factor = 1. - alpha_factor
                     focal_weight = classification
                     focal_weight = alpha_factor * torch.pow(focal_weight, gamma)
-                    
+
                     bce = -(torch.log(1.0 - classification))
-                    
+
                     cls_loss = focal_weight * bce
-                    
+
                     regression_losses.append(torch.tensor(0).to(dtype))
                     classification_losses.append(cls_loss.sum())
 
                 continue
-                
+
             IoU = calc_iou(anchor[:, :], bbox_annotation[:, :4])
 
             IoU_max, IoU_argmax = torch.max(IoU, dim=1)
@@ -169,7 +169,8 @@ class FocalLoss(nn.Module):
             clipBoxes = ClipBoxes()
             obj_list = kwargs.get('obj_list', None)
             out = postprocess(imgs.detach(),
-                              torch.stack([anchors[0]] * imgs.shape[0], 0).detach(), regressions.detach(), classifications.detach(),
+                              torch.stack([anchors[0]] * imgs.shape[0], 0).detach(), regressions.detach(),
+                              classifications.detach(),
                               regressBoxes, clipBoxes,
                               0.5, 0.3)
             imgs = imgs.permute(0, 2, 3, 1).cpu().numpy()
