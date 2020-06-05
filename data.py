@@ -132,7 +132,7 @@ def get_multitask_experiment(name, tasks, only_config=False, factor='clutter'):
     if name == 'openloris':
         tasks=9
         classes_per_task = 69
-        config = {'size': 50, 'channels': 3, 'classes': 69}
+        config = {'size': 224, 'channels': 3, 'classes': 69}
 
     elif name == 'cifar':
         tasks=5
