@@ -28,7 +28,6 @@ EXPERIMENT = 'mydataset'
 VISDOM = VISDOM_EXEMPLARS = None
 SEED = 7
 RESULT_DIR = './results1'
-SCENARIO = 'domain'
 # use binary (instead of multi-class) classication loss
 # BCE = True
 # size of latent representation
@@ -175,7 +174,7 @@ def run(args):
         model = Classifier(
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
             fc_layers=args.fc_lay, fc_units=args.fc_units, fc_drop=args.fc_drop, fc_nl=args.fc_nl,
-            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=True if args.gating_prop > 0 else False,
+            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=False,
             binaryCE=args.bce
         ).to(device)
 
@@ -289,17 +288,17 @@ def run(args):
     # -visdom (i.e., after each [prec_log]
     eval_cb = cb._eval_cb(
         log=args.prec_log, test_datasets=test_datasets, visdom=VISDOM, precision_dict=None, iters_per_task=args.iters,
-        test_size=args.prec_n, classes_per_task=classes_per_task, scenario=SCENARIO,
+        test_size=args.prec_n, classes_per_task=classes_per_task
     )
     # -pdf / reporting: summary plots (i.e, only after each task)
     eval_cb_full = cb._eval_cb(
         log=args.iters, test_datasets=test_datasets, precision_dict=precision_dict,
-        iters_per_task=args.iters, classes_per_task=classes_per_task, scenario=SCENARIO,
+        iters_per_task=args.iters, classes_per_task=classes_per_task
     )
     # -with exemplars (both for visdom & reporting / pdf)
     eval_cb_exemplars = cb._eval_cb(
         log=args.iters, test_datasets=test_datasets, visdom=VISDOM_EXEMPLARS, classes_per_task=classes_per_task,
-        precision_dict=precision_dict_exemplars, scenario=SCENARIO, iters_per_task=args.iters,
+        precision_dict=precision_dict_exemplars, iters_per_task=args.iters,
         with_exemplars=True,
     ) if args.use_exemplars else None
     # -collect them in <lists>
@@ -317,13 +316,13 @@ def run(args):
     start = time.time()
     # Train model
     train_cl(
-        model, train_datasets, test_datasets, replay_mode=args.replay, scenario=SCENARIO,
+        model, train_datasets, test_datasets, replay_mode=args.replay,
         classes_per_task=classes_per_task,
         iters=args.iters, batch_size=args.batch, savepath=savepath,
         generator=generator, gen_iters=args.g_iters, gen_loss_cbs=generator_loss_cbs,
         sample_cbs=sample_cbs, eval_cbs=eval_cbs, loss_cbs=generator_loss_cbs if args.feedback else solver_loss_cbs,
         eval_cbs_exemplars=eval_cbs_exemplars, use_exemplars=args.use_exemplars, add_exemplars=args.add_exemplars,
-    )'''
+    )
 
 
 if __name__ == '__main__':
