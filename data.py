@@ -9,6 +9,7 @@ import os
 
 my_transform = transforms.Compose([transforms.ToTensor()])
 
+
 class MyDataset(Dataset):
 
     def __init__(self, batch_num, name='openloris', mode='train', own_transform=None, factor='clutter'):
@@ -17,29 +18,28 @@ class MyDataset(Dataset):
         self.imgs = []
         self.labels = []
 
-        if name=='openloris':
-            datapath = glob.glob('img/{}/{}/task{}/*'.format(factor,mode,batch_num))
+        if name == 'openloris':
+            datapath = glob.glob('img/{}/{}/task{}/*'.format(factor, mode, batch_num))
             datapath = sorted([p for p in datapath if p[-1].isdigit()])
             for i in range(len(datapath)):
-                temp = glob.glob(datapath[i]+'/*.jpg')
+                temp = glob.glob(datapath[i] + '/*.jpg')
                 self.imgs.extend([Image.open(x).convert('RGB').resize((50, 50)) for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
 
-        elif name=='cifar':
+        elif name == 'cifar':
             for i in range(20):
-                temp = glob.glob('img/cifar/{}/task{}/{}/*.png'.format(mode, batch_num, i+1))
+                temp = glob.glob('img/cifar/{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
                 self.imgs.extend([Image.open(x).convert('RGB') for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
 
-        elif name=='mnist':
+        elif name == 'mnist':
             for i in range(10):
-                temp = glob.glob('img/mnist/{}/task{}/{}/*.png'.format(mode, batch_num, i+1))
+                temp = glob.glob('img/mnist/{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
                 self.imgs.extend([Image.open(x).convert('RGB').resize((32, 32)) for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
-
 
     def __setitem__(self, index, value):
         self.imgs[index] = value[0]
@@ -126,21 +126,20 @@ class ExemplarDataset(Dataset):
 
 
 def get_multitask_experiment(name, tasks, only_config=False, factor='clutter'):
-
     classes_per_task = 0
-    config = { }
+    config = {}
     if name == 'openloris':
-        tasks=9
+        tasks = 9
         classes_per_task = 69
-        config = {'size': 50, 'channels': 3, 'classes': 69}
+        config = {'size': 224, 'channels': 3, 'classes': 69}
 
     elif name == 'cifar':
-        tasks=5
+        tasks = 5
         classes_per_task = 20
         config = {'size': 32, 'channels': 3, 'classes': 20}
 
     elif name == 'mnist':
-        tasks=5
+        tasks = 5
         classes_per_task = 2
         config = {'size': 32, 'channels': 3, 'classes': 2}
 
@@ -152,6 +151,8 @@ def get_multitask_experiment(name, tasks, only_config=False, factor='clutter'):
 
     # Return tuple of train-, validation- and test-dataset, config-dictionary and number of classes per task
     return config if only_config else ((train_datasets, test_datasets), config, classes_per_task)
+
+
 '''
 import pickle
 with open('mnist.pk','wb') as f:

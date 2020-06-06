@@ -1,11 +1,11 @@
 import torch
 from torch.nn import functional as F
-from linear_nets import MLP, fc_layer, vgg16
+from backbones.MLP import MLP
+from backbones.VGG import vgg16
 from lib.exemplars import ExemplarHandler
 from lib.continual_learner import ContinualLearner
 from lib.replayer import Replayer
 import utils
-import torch.nn as nn
 
 
 class Classifier(ContinualLearner, Replayer, ExemplarHandler):
@@ -52,7 +52,7 @@ class Classifier(ContinualLearner, Replayer, ExemplarHandler):
     @property
     def name(self):
         # return "{}_c{}".format(self.fcE.name, self.classes)
-        return "vgg"
+        return "vgg-16"
 
     def forward(self, x):
         return self.vgg(x)
