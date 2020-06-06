@@ -36,6 +36,7 @@ Z_DIM = 100
 parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
+parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
 
 parser.add_argument('--factor', type=str, default='clutter', dest='factor')
@@ -95,7 +96,7 @@ parser.add_argument('--sample-n', type=int, default=64)
 def run(args):
     result_path = os.path.join('./precision_onEachTask', args.savepath)
     savepath = result_path + '/' + str(datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')) + '.csv'
-    if not os.path.exists(dirs):
+    if not os.path.exists(result_path):
         print('no exist the path and create one ...')
         os.makedirs(result_path, exist_ok=True)
 
@@ -131,7 +132,17 @@ def run(args):
 
     # Use cuda?
     cuda = torch.cuda.is_available() and args.cuda
-    device = torch.device("cuda" if cuda else "cpu")
+    device = "cuda" if cuda else "cpu"
+    gpu_devices = None
+
+    if args.gpuID == None:
+        if torch.cuda.device_count() > 1:
+            gpu_devices = ','.join([str(id) for id in range(torch.cuda.device_count())])
+            print('==>  training with CUDA (GPU id: ' + gpu_devices + ') ... <==')
+    else:
+        gpu_devices = ','.join([str(id) for id in args.gpuID])
+        os.environ['CUDA_VISIBLE_DEVICES'] = gpu_devices
+        print('==>  training with CUDA (GPU id: ' + str(args.GPUs) + ') ... <==')
 
     # Set random seeds
     np.random.seed(SEED)
