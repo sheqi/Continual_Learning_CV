@@ -1,8 +1,9 @@
+
 import torch
 from torch.nn import functional as F
 import utils
 from backbones.MLP import MLP, fc_layer, fc_layer_split
-from replayer import Replayer
+from lib.replayer import Replayer
 
 
 class AutoEncoder(Replayer):
