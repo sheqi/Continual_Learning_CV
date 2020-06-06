@@ -1,19 +1,12 @@
 import data
-
-EXPERIMENT = 'mydataset'
-SEED = 7
-
+from lib.encoder import Classifier
+from lib.vae_models import AutoEncoder
 
 def get_param_stamp_from_args(args):
     '''To get param-stamp a bit quicker.'''
-    from lib.encoder import Classifier
-    from lib.vae_models import AutoEncoder
-
-    scenario = args.scenario
-    # (but note that when XdG is used, task-identity information is being used so the actual scenario is still Task-IL)
 
     config = data.get_multitask_experiment(
-        name=args.experiment, scenario=scenario, tasks=args.tasks, data_dir=args.d_dir, only_config=True,
+        name=args.experiment, tasks=args.tasks, data_dir=args.d_dir, only_config=True,
         verbose=False,
     )
 
@@ -25,11 +18,12 @@ def get_param_stamp_from_args(args):
         )
         model.lamda_pl = 1.
     else:
+        # No bce_distill
         model = Classifier(
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
             fc_layers=args.fc_lay, fc_units=args.fc_units, fc_drop=args.fc_drop, fc_nl=args.fc_nl,
-            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=True if args.gating_prop > 0 else False,
-            binaryCE=args.bce, binaryCE_distill=args.bce_distill,
+            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=False,
+            binaryCE=args.bce
         )
 
     train_gen = True if (args.replay == "generative" and not args.feedback) else False
@@ -42,24 +36,25 @@ def get_param_stamp_from_args(args):
 
     model_name = model.name
     replay_model_name = generator.name if train_gen else None
-    param_stamp = get_param_stamp(args, model_name, verbose=False, replay=False if (args.replay == "none") else True,
+    param_stamp = get_param_stamp(args, model_name, verbose=False, replay=False if (args.replay=="none") else True,
                                   replay_model_name=replay_model_name)
     return param_stamp
+
 
 
 def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_name=None):
     '''Based on the input-arguments, produce a "parameter-stamp".'''
 
     # -for task
-    multi_n_stamp = "{n}-{set}".format(n=args.tasks, set="domain")
-    task_stamp = "{exp}{multi_n}".format(exp=EXPERIMENT, multi_n=multi_n_stamp)
+    multi_n_stamp = "{n}-{set}".format(n=args.tasks, set=args.scenario) if hasattr(args, "tasks") else ""
+    task_stamp = "{exp}{multi_n}".format(exp=args.experiment, multi_n=multi_n_stamp)
     if verbose:
-        print("\n" + " --> task:          " + task_stamp)
+        print("\n"+" --> task:          "+task_stamp)
 
     # -for model
     model_stamp = model_name
     if verbose:
-        print(" --> model:         " + model_stamp)
+        print(" --> model:         "+model_stamp)
 
     # -for hyper-parameters
     hyper_stamp = "{i_e}{num}-lr{lr}{lrg}-b{bsz}-{optim}".format(
@@ -76,23 +71,16 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
             l=args.ewc_lambda,
             fi="{}{}".format("N" if args.fisher_n is None else args.fisher_n, "E" if args.emp_fi else ""),
             o="-O{}".format(args.gamma) if args.online else "",
-        ) if (args.ewc_lambda > 0 and args.ewc) else ""
-        si_stamp = "SI{c}-{eps}".format(c=args.si_c, eps=args.epsilon) if (args.si_c > 0 and args.si) else ""
+        ) if (args.ewc_lambda>0 and args.ewc) else ""
+        si_stamp = "SI{c}-{eps}".format(c=args.si_c, eps=args.epsilon) if (args.si_c>0 and args.si) else ""
         both = "--" if (args.ewc_lambda > 0 and args.ewc) and (args.si_c > 0 and args.si) else ""
         if verbose and args.ewc_lambda > 0 and args.ewc:
             print(" --> EWC:           " + ewc_stamp)
-        if verbose and args.si_c > 0 and args.si:
+        if verbose and args.si_c>0 and args.si:
             print(" --> SI:            " + si_stamp)
     ewc_stamp = "--{}{}{}".format(ewc_stamp, both, si_stamp) if (
-            hasattr(args, 'ewc') and ((args.ewc_lambda > 0 and args.ewc) or (args.si_c > 0 and args.si))
+        hasattr(args, 'ewc') and ((args.ewc_lambda > 0 and args.ewc) or (args.si_c > 0 and args.si))
     ) else ""
-
-    # -for XdG
-    xdg_stamp = ""
-    if (hasattr(args, "gating_prop") and args.gating_prop > 0):
-        xdg_stamp = "--XdG{}".format(args.gating_prop)
-        if verbose:
-            print(" --> XdG:           " + "gating = {}".format(args.gating_prop))
 
     # -for replay
     if replay:
@@ -101,8 +89,7 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
             KD="-KD{}".format(args.temp) if args.distill else "",
             model="" if (replay_model_name is None) else "-{}".format(replay_model_name),
             gi="-gi{}".format(args.gen_iters) if (
-                    hasattr(args, "gen_iters") and (replay_model_name is not None) and (
-                not args.iters == args.gen_iters)
+                hasattr(args, "gen_iters") and (replay_model_name is not None) and (not args.iters==args.gen_iters)
             ) else ""
         )
         if verbose:
@@ -124,11 +111,10 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
         binLoss_stamp = '--BCE'
 
     # --> combine
-    param_stamp = "{}--{}--{}{}{}{}{}{}{}".format(
-        task_stamp, model_stamp, hyper_stamp, ewc_stamp, xdg_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
-        "-s{}".format(args.seed) if not SEED else "",
+    param_stamp = "{}--{}--{}{}{}{}{}{}".format(
+        task_stamp, model_stamp, hyper_stamp, ewc_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
+        "-s{}".format(args.seed) if not args.seed == 0 else "",
     )
 
-    ## Print param-stamp on screen and return
-    # print(param_stamp)
+    print(param_stamp)
     return param_stamp

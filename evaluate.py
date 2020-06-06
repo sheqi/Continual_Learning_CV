@@ -9,7 +9,7 @@ import utils
 
 
 def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
-             with_exemplars=False, no_task_mask=False, task=None):
+             with_exemplars=False, task=None):
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
@@ -17,13 +17,6 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
     # Set model to eval()-mode
     mode = model.training
     model.eval()
-
-    # Apply task-specifc "gating-mask" for each hidden fully connected layer (or remove it!)
-    if hasattr(model, "mask_dict") and model.mask_dict is not None:
-        if no_task_mask:
-            model.reset_XdGmask()
-        else:
-            model.apply_XdGmask(task=task)
 
     # Loop over batches in [dataset]
     data_loader = utils.get_data_loader(dataset, batch_size, cuda=model._is_on_cuda())
@@ -58,7 +51,8 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
 
 
 def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
-              with_exemplars=False, no_task_mask=False, task=None):
+             with_exemplars=False, task=None):
+
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
@@ -66,13 +60,6 @@ def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allow
     # Set model to eval()-mode
     mode = model.training
     model.eval()
-
-    # Apply task-specifc "gating-mask" for each hidden fully connected layer (or remove it!)
-    if hasattr(model, "mask_dict") and model.mask_dict is not None:
-        if no_task_mask:
-            model.reset_XdGmask()
-        else:
-            model.apply_XdGmask(task=task)
 
     # Loop over batches in [dataset]
     data_loader = utils.get_data_loader(dataset, batch_size, cuda=model._is_on_cuda())
@@ -117,13 +104,12 @@ def initiate_precision_dict(n_tasks):
     return precision
 
 
-def precision(model, datasets, current_task, iteration, classes_per_task=None, scenario="class",
+def precision(model, datasets, current_task, iteration, classes_per_task=None,
               precision_dict=None, test_size=None, verbose=False, summary_graph=True,
-              with_exemplars=False, no_task_mask=False):
+              with_exemplars=False):
     '''Evaluate precision of a classifier (=[model]) on all tasks so far (= up to [current_task]) using [datasets].
     [precision_dict]    None or <dict> of all measures to keep track of, to which results will be appended to
-    [classes_per_task]  <int> number of active classes er task
-    [scenario]          <str> how to decide which classes to include during evaluating precision'''
+    [classes_per_task]  <int> number of active classes er task'''
 
     # Evaluate accuracy of model predictions for all tasks so far (reporting "0" for future tasks)
     n_tasks = len(datasets)
@@ -133,7 +119,7 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None, s
             allowed_classes = None
             precs.append(validate(model, datasets[i], test_size=test_size, verbose=verbose,
                                   allowed_classes=allowed_classes, with_exemplars=with_exemplars,
-                                  no_task_mask=no_task_mask, task=i + 1))
+                                  task=i+1))
         else:
             precs.append(0)
     average_precs = sum([precs[task_id] for task_id in range(current_task)]) / current_task

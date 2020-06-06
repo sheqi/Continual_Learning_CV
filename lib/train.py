@@ -18,7 +18,7 @@ output = []
 output5 = []
 
 
-def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario="domain", classes_per_task=None,
+def train_cl(model, train_datasets, test_datasets, replay_mode="none", classes_per_task=None,
              iters=2000, batch_size=32,
              generator=None, gen_iters=0, gen_loss_cbs=list(), loss_cbs=list(), eval_cbs=list(), sample_cbs=list(),
              use_exemplars=True, add_exemplars=False, eval_cbs_exemplars=list(), savepath='./'):
@@ -27,7 +27,6 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
     [model]             <nn.Module> main model to optimize across all tasks
     [train_datasets]    <list> with for each task the training <DataSet>
     [replay_mode]       <str>, choice from "generative", "exact", "current", "offline" and "none"
-    [scenario]          "domain"
     [classes_per_task]  <int>, # of classes per task
     [iters]             <int>, # of optimization-steps (i.e., # of batches) per task
     [generator]         None or <nn.Module>, if a seperate generative model should be trained (for [gen_iters] per task)
@@ -61,11 +60,9 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
         if add_exemplars and task > 1:
             # ---------- ADHOC SOLUTION: permMNIST needs transform to tensor, while splitMNIST does not ---------- #
             if len(train_datasets) > 6:
-                target_transform = (lambda y, x=classes_per_task: torch.tensor(y % x)) if (
-                        scenario == "domain"
-                ) else (lambda y: torch.tensor(y))
+                target_transform = lambda y, x=classes_per_task: torch.tensor(y % x)
             else:
-                target_transform = (lambda y, x=classes_per_task: y % x) if scenario == "domain" else None
+                target_transform = lambda y, x=classes_per_task: y % x
             # ---------------------------------------------------------------------------------------------------- #
             exemplar_dataset = ExemplarDataset(model.exemplar_sets, target_transform=target_transform)
             training_dataset = ConcatDataset([train_dataset, exemplar_dataset])
@@ -150,32 +147,9 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
                 x_ = x if Current else previous_generator.sample(batch_size)
 
                 # Get target scores and labels (i.e., [scores_] / [y_]) -- using previous model, with no_grad()
-                # -if there are no task-specific mask, obtain all predicted scores at once
-                if (not hasattr(previous_model, "mask_dict")) or (previous_model.mask_dict is None):
-                    with torch.no_grad():
-                        all_scores_ = previous_model(x_)
-                # -depending on chosen scenario, collect relevant predicted scores (per task, if required)
-                if scenario in ("domain") and (
-                        (not hasattr(previous_model, "mask_dict")) or (previous_model.mask_dict is None)
-                ):
-                    scores_ = all_scores_
-                    _, y_ = torch.max(scores_, dim=1)
-                else:
-                    # NOTE: it's possible to have scenario=domain with task-mask (so actually it's the Task-IL scenario)
-                    # -[x_] needs to be evaluated according to each previous task, so make list with entry per task
-                    scores_ = list()
-                    y_ = list()
-                    for task_id in range(task - 1):
-                        # -if there is a task-mask (i.e., XdG is used), obtain predicted scores for each task separately
-                        if hasattr(previous_model, "mask_dict") and previous_model.mask_dict is not None:
-                            previous_model.apply_XdGmask(task=task_id + 1)
-                            with torch.no_grad():
-                                all_scores_ = previous_model(x_)
-                        temp_scores_ = all_scores_
+                scores_ = all_scores_
+                _, y_ = torch.max(scores_, dim=1)
 
-                        _, temp_y_ = torch.max(temp_scores_, dim=1)
-                        scores_.append(temp_scores_)
-                        y_.append(temp_y_)
 
                 # Only keep predicted y/scores if required (as otherwise unnecessary computations will be done)
                 y_ = y_ if (model.replay_targets == "hard") else None
@@ -186,7 +160,7 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
 
                 # Train the main model with this batch
                 loss_dict = model.train_a_batch(x, y, x_=x_, y_=y_, scores=scores, scores_=scores_,
-                                                active_classes=active_classes, task=task, rnt=1. / task)
+                                                active_classes=active_classes, rnt=1. / task)
 
                 # Update running parameter importance estimates in W
                 if isinstance(model, ContinualLearner) and (model.si_c > 0):
@@ -213,7 +187,7 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
             if generator is not None and batch_index <= gen_iters:
                 # Train the generator with this batch
                 loss_dict = generator.train_a_batch(x, y, x_=x_, y_=y_, scores_=scores_, active_classes=active_classes,
-                                                    task=task, rnt=1. / task)
+                                                    rnt=1. / task)
 
                 # Fire callbacks on each iteration
                 for loss_cb in gen_loss_cbs:
@@ -234,9 +208,7 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", scenario=
         if isinstance(model, ContinualLearner) and (model.ewc_lambda > 0):
             # -find allowed classes
             allowed_classes = None
-            # -if needed, apply correct task-specific mask
-            if model.mask_dict is not None:
-                model.apply_XdGmask(task=task)
+
             # -estimate FI-matrix
             model.estimate_fisher(training_dataset, allowed_classes=allowed_classes)
 

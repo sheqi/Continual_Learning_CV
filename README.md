@@ -17,9 +17,10 @@ The paper has been accepted into ICRA 2020.
 The current version of the code has been tested with following libs:
 * `pytorch 1.1.0`
 * `torchvision 0.2.1`
-* `tqdm`
-* `visdom`
-* `Pillow`
+* `tqdm 4.19.9`
+* `visdom 0.1.8.9`
+* `Pillow 6.2.0`
+* `Pandas 1.0.3`
 
 Experimental platforms:
 * `Intel Core i9 CPU`
