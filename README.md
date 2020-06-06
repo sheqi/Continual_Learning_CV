@@ -21,6 +21,7 @@ The current version of the code has been tested with following libs:
 * `tqdm 4.19.9`
 * `visdom 0.1.8.9`
 * `Pillow 6.2.0`
+* `Pandas 1.0.3`
 
 Experimental platforms:
 * `Intel Core i9 CPU`
