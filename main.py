@@ -27,7 +27,7 @@ import lib.visual_plt
 EXPERIMENT = 'mydataset'
 VISDOM = VISDOM_EXEMPLARS = None
 SEED = 7
-RESULT_DIR = './results1'
+RESULT_DIR = './results'
 SCENARIO = 'domain'
 # use binary (instead of multi-class) classification loss
 # BCE = True
