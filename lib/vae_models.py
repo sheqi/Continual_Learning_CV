@@ -1,8 +1,9 @@
+
 import torch
 from torch.nn import functional as F
 import utils
-from linear_nets import MLP, fc_layer, fc_layer_split
-from replayer import Replayer
+from backbones.MLP import MLP, fc_layer, fc_layer_split
+from lib.replayer import Replayer
 
 
 class AutoEncoder(Replayer):
@@ -212,7 +213,7 @@ class AutoEncoder(Replayer):
             variatL = torch.mean(variatL)  # -> average over batch
             if self.average:
                 variatL /= (
-                            self.image_channels * self.image_size ** 2)  # -> divide by # of input-pixels, if [self.average]
+                        self.image_channels * self.image_size ** 2)  # -> divide by # of input-pixels, if [self.average]
         else:
             variatL = torch.tensor(0., device=self._device())
 

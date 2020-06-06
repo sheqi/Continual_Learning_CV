@@ -9,4 +9,3 @@ CUDA_VISIBLE_DEVICES=0 python3 single.py --experiment mydataset --replay=generat
 CUDA_VISIBLE_DEVICES=0 python3 single.py --experiment mydataset --replay=generative --distill --feedback --savepath=replay-generative-distill-feedback
 CUDA_VISIBLE_DEVICES=0 python3 single.py --experiment mydataset --savepath=naive
 CUDA_VISIBLE_DEVICES=0 python3 single.py --experiment mydataset --savepath=culmulative --culmulative=1
-

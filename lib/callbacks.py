@@ -11,14 +11,14 @@ def _sample_cb(log, config, visdom=None, test_datasets=None, sample_size=64, ite
     def sample_cb(generator, batch, task=1):
         '''Callback-function, to evaluate sample (and reconstruction) ability of the model.'''
 
-        iteration = batch if task==1 else (task-1)*iters_per_task + batch
+        iteration = batch if task == 1 else (task - 1) * iters_per_task + batch
 
         if iteration % log == 0:
 
             # Evaluate reconstruction-ability of model on [test_dataset]
             if test_datasets is not None:
                 # Reconstruct samples from current task
-                evaluate.show_reconstruction(generator, test_datasets[task-1], config, size=int(sample_size/2),
+                evaluate.show_reconstruction(generator, test_datasets[task - 1], config, size=int(sample_size / 2),
                                              visdom=visdom, task=task)
 
             # Generate samples
