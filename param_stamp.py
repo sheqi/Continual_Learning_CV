@@ -107,7 +107,6 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
     # --> combine
     param_stamp = "{}--{}--{}{}{}{}{}{}".format(
         model_stamp, hyper_stamp, ewc_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
-        "-s{}".format(args.seed) if not args.seed == 0 else "",
     )
 
     print(param_stamp)
