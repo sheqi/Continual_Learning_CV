@@ -1,4 +1,3 @@
-## This code base is no longer maintained and exists as a historical artifact to supplement Continual Learning Toolbox for Computer Vision Tasks. For more recent work, please see [Continual_Learning_CV](https://github.com/sheqi/Continual_Learning_CV). 
 # Continual_Learning_CV (CLCV)
 Continual Learning Toolbox for Computer Vision Tasks
 
