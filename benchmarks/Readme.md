@@ -9,6 +9,7 @@ Dataset preparation:
 * `how to download`
 * `put the data in which folder`
 * `how to generate pkl files`
+* `how to change datasets (which file, how to modify)`
 
 Benchmark results:
 
