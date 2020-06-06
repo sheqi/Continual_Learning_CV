@@ -8,8 +8,8 @@ from torch.nn import functional as F
 from torchvision import transforms
 import copy
 import data
-from encoder import Classifier
-from vae_models import AutoEncoder
+from lib.encoder import Classifier
+from lib.vae_models import AutoEncoder
 
 
 ###################
