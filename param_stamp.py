@@ -105,7 +105,7 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
         binLoss_stamp = '--BCE'
 
     # --> combine
-    param_stamp = "{}--{}--{}{}{}{}{}{}".format(
+    param_stamp = "{}--{}{}{}{}{}".format(
         model_stamp, hyper_stamp, ewc_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
     )
 
