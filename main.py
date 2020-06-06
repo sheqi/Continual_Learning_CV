@@ -141,7 +141,7 @@ def run(args):
     else:
         gpu_devices = ','.join([str(id) for id in args.gpuID])
         os.environ['CUDA_VISIBLE_DEVICES'] = gpu_devices
-        print('==>  training with CUDA (GPU id: ' + str(args.GPUs) + ') ... <==')
+        print('==>  training with CUDA (GPU id: ' + str(args.gpuID) + ') ... <==')
 
     # Set random seeds
     np.random.seed(SEED)
