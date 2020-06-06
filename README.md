@@ -1,3 +1,4 @@
+## This code base is no longer maintained and exists as a historical artifact to supplement Continual Learning Toolbox for Computer Vision Tasks. For more recent work, please see [Continual_Learning_CV](https://github.com/sheqi/Continual_Learning_CV). 
 # Continual_Learning_CV (CLCV)
 Continual Learning Toolbox for Computer Vision Tasks
 
@@ -17,9 +18,10 @@ The paper has been accepted into ICRA 2020.
 The current version of the code has been tested with following libs:
 * `pytorch 1.1.0`
 * `torchvision 0.2.1`
-* `tqdm`
-* `visdom`
-* `Pillow`
+* `tqdm 4.19.9`
+* `visdom 0.1.8.9`
+* `Pillow 6.2.0`
+* `Pandas 1.0.3`
 
 Experimental platforms:
 * `Intel Core i9 CPU`

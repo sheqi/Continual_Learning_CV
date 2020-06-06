@@ -1,4 +1,4 @@
-import os, sys, shutil
+import shutil
 
 shutil.copytree("./train/illumination/segment1", "./benchmark2/sequence/train/task1")
 shutil.copytree("./train/illumination/segment2", "./benchmark2/sequence/train/task2")

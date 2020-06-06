@@ -1,4 +1,4 @@
-import os, sys, shutil
+import shutil
 
 shutil.copytree('./train/clutter/segment1', './benchmark1/clutter/train/task1')
 shutil.copytree('./train/clutter/segment2', './benchmark1/clutter/train/task2')
