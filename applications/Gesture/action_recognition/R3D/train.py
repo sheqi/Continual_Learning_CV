@@ -24,6 +24,7 @@ from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader, RandomSampler
 from torchsummary import summary
+from tensorboardX import SummaryWriter
 
 
 from models import resnext 
@@ -45,13 +46,14 @@ def parse_opts():
 
     # args for dataloader
     parser.add_argument('--is_train', action='store_true')
-    parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--batch_size_val', type=int, default=16)
+    parser.add_argument('--batch_size', type=int, default=42)
     parser.add_argument('--num_workers', type=int, default=8)
-    parser.add_argument('--w', type=int, default=112)
-    parser.add_argument('--h', type=int, default=112)
-    parser.add_argument('--clip_len', type=int, default=32)
-    parser.add_argument('--dataset', type=str, default='EgoGesture')
+    parser.add_argument('--w', type=int, default=224)
+    parser.add_argument('--h', type=int, default=224)
+    parser.add_argument('--sample_size', type=int, default=224)
+
+    parser.add_argument('--clip_len', type=int, default=16)
+    parser.add_argument('--dataset', type=str, default='jester')
     
     
     
@@ -59,7 +61,6 @@ def parse_opts():
     parser.add_argument('--model', type=str, default='resnext')
     parser.add_argument('--arch', type=str, default='resnext-101')
     parser.add_argument('--model_depth', type=int, default=101)
-    parser.add_argument('--sample_size', type=int, default=112)
     parser.add_argument('--resnet_shortcut', type=str, default='B')
     parser.add_argument('--resnext_cardinality', type=int, default=32)
     # parser.add_argument('--sample_duration', type=int, default=32)
@@ -94,6 +95,7 @@ def parse_opts():
                         help='lr steps for decreasing learning rate')    
     parser.add_argument('--learning_rate', type=float, default=1e-3,
                         help='learning rate')  
+    parser.add_argument('--log', default='log', type=str)
     args = parser.parse_args()
     return args
 
@@ -151,7 +153,7 @@ def model_test(model, save_dir, filename, dataloader, num_class):
     print('val_acc:{:.3f}'.format(acc.avg))
 
 
-def model_train(model, save_dir, dataloader_train, dataloader_val):
+def model_train(model, dataloader_train, dataloader_val):
     model.train()
     num_epochs = 50
     criterion = nn.CrossEntropyLoss().to(device)
@@ -167,16 +169,25 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
     #     {"params": pretrained_lr_layers, "lr": 1e-4, 'weight_decay':1e-3}
     # ], lr=1e-3, momentum=0.9, weight_decay=1e-3)    
 
-    optimizer = torch.optim.SGD(model.parameters(),lr=args.learning_rate, momentum=0.9, weight_decay=1e-3)   
+    optimizer = torch.optim.SGD(model.parameters(),lr=args.learning_rate, momentum=0.9, weight_decay=1e-3)  
+
+    cur_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
+    save_dir = os.path.join(params['save_path'], cur_time)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir) 
+
+    logdir = os.path.join(args.log, cur_time)
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+    writer = SummaryWriter(log_dir=logdir)
 
 
-    train_logger = utils.Logger(os.path.join(save_dir, '{}-{}-{}.log'.format(args.arch, args.clip_len, args.modality)),
-                                ['step', 'train_loss', 'train_acc', 'val_loss', 'val_acc',
-                                'lr_feature', 'lr_fc'])
+    # train_logger = utils.Logger(os.path.join(save_dir, '{}-{}-{}.log'.format(args.arch, args.clip_len, args.modality)),
+    #                             ['step', 'train_loss', 'train_acc', 'val_loss', 'val_acc',
+    #                             'lr_feature', 'lr_fc'])
     # scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
     
 
-    val_loss = utils.AverageMeter()
 
     batch_time = utils.AverageMeter()
     data_time = utils.AverageMeter()
@@ -185,9 +196,17 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
     top5 = utils.AverageMeter()
 
 
-    step = 0
     for epoch in trange(num_epochs):  # loop over the dataset multiple times
+        batch_time.reset()
+        data_time.reset()
+        losses.reset()
+        top1.reset()
+        top5.reset()
+
+        end = time.time()
+        step = 0
         for data in dataloader_train:
+            data_time.update(time.time() - end)
             probs, outputs, labels = forward(model, data)
             optimizer.zero_grad()
             loss_ = criterion(outputs, labels)
@@ -197,6 +216,8 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
             top1.update(prec1.item(), data[0].size(0))
             top5.update(prec5.item(), data[0].size(0))
             losses.update(loss_.item())
+            batch_time.update(time.time() - end)
+            end = time.time()
             if (step+1) % params['display'] == 0:
                 # print('-------------------------------------------------------')
                 # print('epoch{}/{} train_acc:{:.3f} train_loss:{:.3f} '.format(
@@ -220,21 +241,35 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
                 print(print_string)
             step += 1     
         utils.save_checkpoint(model, optimizer, step, save_dir,
-                                '{}-{}-{}.pth'.format(args.arch, args.clip_len, args.modality))
+                                '{}-{}-{}-{}.pth'.format(args.arch, args.clip_len, args.modality, epoch))
         # scheduler.step()
         utils.adjust_learning_rate(args.learning_rate, optimizer, epoch, args.lr_steps)
 
 
+        writer.add_scalar('train_loss_epoch', losses.avg, epoch)
+        writer.add_scalar('train_top1_acc_epoch', top1.avg, epoch)
+        writer.add_scalar('train_top5_acc_epoch', top5.avg, epoch)
 
-        val_loss.reset()
+
+        batch_time.reset()
+        data_time.reset()
+        losses.reset()
+        top1.reset()
+        top5.reset()
+
+        end = time.time()
         model.eval()
-        for data_val in dataloader_val:
-            probs_val, outputs_val, labels_val = forward(model, data_val)
-            val_loss_ = criterion(outputs_val, labels_val)
-            val_loss.update(val_loss_.item())
-            prec1, prec5 = utils.accuracy(outputs.data, labels, topk=(1, 5))
-            top1.update(prec1.item(), data[0].size(0))
-            top5.update(prec5.item(), data[0].size(0))
+        with torch.no_grad():
+            for data_val in dataloader_val:
+                data_time.update(time.time() - end)
+                probs_val, outputs_val, labels_val = forward(model, data_val)
+                val_loss_ = criterion(outputs_val, labels_val)
+                losses.update(val_loss_.item())
+                prec1, prec5 = utils.accuracy(outputs.data, labels, topk=(1, 5))
+                top1.update(prec1.item(), data[0].size(0))
+                top5.update(prec5.item(), data[0].size(0))
+                batch_time.update(time.time() - end)
+                end = time.time()
         model.train()
         print('----validation----')
         print_string = 'Epoch: [{0}][{1}/{2}]'.format(epoch, step + 1, len(dataloader_val))
@@ -243,7 +278,7 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
             data_time=data_time.val,
             batch_time=batch_time.val)
         print(print_string)
-        print_string = 'loss: {loss:.5f}'.format(loss=val_loss.avg)
+        print_string = 'loss: {loss:.5f}'.format(loss=losses.avg)
         print(print_string)
         print_string = 'Top-1 accuracy: {top1_acc:.2f}%, Top-5 accuracy: {top5_acc:.2f}%'.format(
             top1_acc=top1.avg,
@@ -251,22 +286,12 @@ def model_train(model, save_dir, dataloader_train, dataloader_val):
         print(print_string)
 
 
+        writer.add_scalar('val_loss_epoch', losses.avg, epoch)
+        writer.add_scalar('val_top1_acc_epoch', top1.avg, epoch)
+        writer.add_scalar('val_top5_acc_epoch', top5.avg, epoch)
 
-        # print('epoch{}/{} train_acc:{:.3f} train_loss:{:.3f} val_acc:{:.3f} val_loss:{:.3f}'.format(
-        #     epoch + 1, num_epochs,
-        #     train_acc.val, train_loss.val,
-        #     val_acc.avg, val_loss.avg
-        #     ))
-        # train_logger.log({
-        #     'step': step,
-        #     'train_loss': train_loss.val,
-        #     'train_acc': train_acc.val,
-        #     'val_loss': val_loss.avg,
-        #     'val_acc': val_acc.avg,
-        #     # 'lr_feature': optimizer.param_groups[1]['lr'],
-        #     'lr_feature': 0,
-        #     'lr_fc': optimizer.param_groups[0]['lr']
-        # })
+
+
 
 
 
@@ -287,15 +312,15 @@ if __name__ == '__main__':
 
 
     temporal_transform_train = transforms.Compose([
-            TemporalRandomCrop(args.clip_len)
+            TemporalUniformCrop(args.clip_len)
             ])    
 
     temporal_transform_test = transforms.Compose([
-            TemporalCenterCrop(args.clip_len)
+            TemporalUniformCrop(args.clip_len)
             ])
 
     trans_train  = transforms.Compose([
-                            GroupScale([140, 140]),  #112/0.8
+                            GroupScale([256, 256]),  #112/0.8
                             GroupMultiScaleCrop([args.w, args.h], scales),
                             # GroupMultiScaleRotate(20),
                             ToTorchFormatTensor(),
@@ -314,7 +339,6 @@ if __name__ == '__main__':
 
     # load dataset
     if args.is_train:
-        cur_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
         print('Loading training data.....')
         if args.dataset == 'EgoGesture':
             dataset_train = dataset_pkl_EgoGesture.dataset_video(annot_path, 'train',
@@ -329,7 +353,7 @@ if __name__ == '__main__':
             dataset_val = dataset_pkl_EgoGesture.dataset_video(annot_path, 'val', 
                                                 spatial_transform=trans_test,
                                                 temporal_transform = temporal_transform_test)
-            dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size_val, 
+            dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size, 
                                         num_workers=args.num_workers,pin_memory=True)
         else:
             dataset_train = dataset_pkl.dataset_video(annot_path, 'train',
@@ -344,7 +368,7 @@ if __name__ == '__main__':
             dataset_val = dataset_pkl.dataset_video(annot_path, 'val', 
                                                 spatial_transform=trans_test,
                                                 temporal_transform = temporal_transform_test)
-            dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size_val, 
+            dataloader_val = DataLoader(dataset_val, batch_size=args.batch_size, 
                                         num_workers=args.num_workers,pin_memory=True)            
 
 
@@ -355,30 +379,28 @@ if __name__ == '__main__':
             dataset_test = dataset_pkl_EgoGesture.dataset_video(annot_path, 'test', 
                                                 spatial_transform=trans_test,
                                                 temporal_transform = temporal_transform_test)
-            dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size_val, 
+            dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size, 
                                         num_workers=args.num_workers,pin_memory=True)
         else:
             dataset_test = dataset_pkl.dataset_video(annot_path, 'test', 
                                                 spatial_transform=trans_test,
                                                 temporal_transform = temporal_transform_test)
-            dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size_val, 
+            dataloader_test = DataLoader(dataset_test, batch_size=args.batch_size, 
                                         num_workers=args.num_workers,pin_memory=True)
 
     model, parameters = generate_model(args, params['num_classes'])
     model.to(device)
 
-    model_save_dir = os.path.join(params['save_path'], cur_time)
-    if not os.path.exists(model_save_dir):
-        os.makedirs(model_save_dir)
+
 
     if args.is_train:
         if args.modality == 'RGB':
-            summary(model, (3,args.clip_len,112,112))
+            summary(model, (3,args.clip_len,args.h,args.h))
         elif args.modality == 'Depth':
-            summary(model, (1,args.clip_len,112,112))
+            summary(model, (1,args.clip_len,args.h,args.h))
         elif args.modality == 'RGB-D':
-            summary(model, (4,args.clip_len,112,112))
-        model_train(model,model_save_dir, dataloader_train, dataloader_val)
+            summary(model, (4,args.clip_len,args.h,args.h))
+        model_train(model, dataloader_train, dataloader_val)
         pdb.set_trace()
     else:
         # to be fixed for submitting testing results for jester and sthv2
