@@ -1,4 +1,8 @@
 # Continual_Learning_CV (CLCV)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![built with Python3.7](https://img.shields.io/badge/build%20with-python3.7-red.svg)](https://www.python.org/)
+[![built with Caffe](https://img.shields.io/badge/build%20with-pytorch-brightgreen.svg)](https://pytorch.org/)
+
 Continual Learning Toolbox for Computer Vision Tasks
 
 
@@ -12,6 +16,15 @@ Qi She et al,
 [OpenLORIS-Object: A Robotic Vision Dataset and Benchmark for Lifelong Deep Learning](https://arxiv.org/pdf/1911.06487.pdf)
 The paper has been accepted into ICRA 2020. 
 
+----------------------------------------------
+
+- [x] OpenLROIS-Object dataset configuration files;
+- [x] SOTA CL methods;
+- [x] OpenLROIS-Object sample codes;
+- [x] More CL benchmarks: MNIST and CIFAR-100 datasets;
+- [x] Visualization tools for 4 CL metrics;
+- [x] More DL backbones: VGG-16, ResNet-18/50/101, EfficientNet;
+- [ ] **New realeases and additional applications** (in progress...)
 ## Requirements
 
 The current version of the code has been tested with following libs:
