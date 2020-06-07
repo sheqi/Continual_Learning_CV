@@ -1,10 +1,9 @@
-import torch.nn as nn
 import torch
-from torchvision.ops.boxes import nms as nms_torch
-
+import torch.nn as nn
 from efficientnet import EfficientNet as EffNet
 from efficientnet.utils import MemoryEfficientSwish, Swish
 from efficientnet.utils_extra import Conv2dStaticSamePadding, MaxPool2dStaticSamePadding
+from torchvision.ops.boxes import nms as nms_torch
 
 
 def nms(dets, thresh):
@@ -421,8 +420,5 @@ class EfficientNet(nn.Module):
 
 
 if __name__ == '__main__':
-    from tensorboardX import SummaryWriter
-
-
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)

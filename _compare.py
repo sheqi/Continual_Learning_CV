@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 import os
+
 import numpy as np
-from param_stamp import get_param_stamp_from_args
 import visual_plt
+
 import main
+from param_stamp import get_param_stamp_from_args
 
 description = 'Compare performance of CL strategies on each scenario of permuted or split MNIST.'
 parser = argparse.ArgumentParser('./_compare.py', description=description)

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import argparse
 import os
+
 import numpy as np
+import visual_plt
+
+import main
 import utils
 from param_stamp import get_param_stamp_from_args
-import visual_plt
-import main
 
 description = 'Compare performance & training time of various continual learning methods.'
 parser = argparse.ArgumentParser('./compare_time.py', description=description)

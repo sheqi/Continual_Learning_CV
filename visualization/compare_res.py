@@ -1,12 +1,14 @@
 # Libraries
+import random
+from math import pi
+
 import matplotlib.pyplot as plt
 import numpy as np
-from math import pi
-import random
 import pandas as pd
 
 COLOR = ['#B6BFF2', '#04C4D9', '#F2C12E', '#F26363', '#BF7E04', '#7F2F56', '#E8B9B5', '#63CAF3', '#F27405', '#68BD44']
 MARKER = ['D', '^', 'o', 'H', '+', 'x', 's', 'p', '*', '3']
+
 
 def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.jpg', color=COLOR,
                        spider=True, bar=False):
@@ -87,7 +89,9 @@ def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.j
         ax.grid()
         plt.savefig(save_name + '_bar' + postfix)
 
-def cross_tasks_plot(matrics_name, method_name, n_task, save_name, *values, error_bar=False, postfix='.jpg', color=COLOR, markers=MARKER):
+
+def cross_tasks_plot(matrics_name, method_name, n_task, save_name, *values, error_bar=False, postfix='.jpg',
+                     color=COLOR, markers=MARKER):
     '''
     Comparison of experimental results among tasks
     :param matrics_name: selected performance matrics, e.g. ['BWT','ACC', 'FWT']
@@ -131,7 +135,8 @@ def cross_tasks_plot(matrics_name, method_name, n_task, save_name, *values, erro
         plt.xticks(x)
         plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.08), ncol=len(method_name))
         plt.grid()
-        plt.savefig(save_name+'_'+matrics_name[i]+postfix)
+        plt.savefig(save_name + '_' + matrics_name[i] + postfix)
+
 
 if __name__ == '__main__':
     '''
@@ -150,14 +155,19 @@ if __name__ == '__main__':
     n_task = 5
     save_name = 'test'
     # w/ error
-    values_error_1 = [[[0.9410, 0.4421, 0.2102, 0.2931, 0.5084], [0.8520, 0.9633, 0.3652, 0.5632, 0.3695], [0.6985, 0.4052, 0.8741, 0.9537, 0.6147]],
-                      [[0.0159, 0.0121, 0.0104, 0.0121, 0.0115], [0.0149, 0.0101, 0.0113, 0.0125, 0.0106], [0.0164, 0.0117, 0.0124, 0.0196, 0.0143]]]
+    values_error_1 = [[[0.9410, 0.4421, 0.2102, 0.2931, 0.5084], [0.8520, 0.9633, 0.3652, 0.5632, 0.3695],
+                       [0.6985, 0.4052, 0.8741, 0.9537, 0.6147]],
+                      [[0.0159, 0.0121, 0.0104, 0.0121, 0.0115], [0.0149, 0.0101, 0.0113, 0.0125, 0.0106],
+                       [0.0164, 0.0117, 0.0124, 0.0196, 0.0143]]]
 
-    values_error_2 = np.array([[[0.6507, 0.5888, 0.0784, 0.4622, 0.3905], [0.9873, 0.3803, 0.3297, 0.3855, 0.6573], [0.8326, 0.1652, 0.0235, 0.7906, 0.8511]],
-                [[0.0159, 0.0121, 0.0104, 0.0121, 0.0115], [0.0149, 0.0101, 0.0113, 0.0125, 0.0106],
-                 [0.0164, 0.0117, 0.0124, 0.0196, 0.0143]]])
+    values_error_2 = np.array([[[0.6507, 0.5888, 0.0784, 0.4622, 0.3905], [0.9873, 0.3803, 0.3297, 0.3855, 0.6573],
+                                [0.8326, 0.1652, 0.0235, 0.7906, 0.8511]],
+                               [[0.0159, 0.0121, 0.0104, 0.0121, 0.0115], [0.0149, 0.0101, 0.0113, 0.0125, 0.0106],
+                                [0.0164, 0.0117, 0.0124, 0.0196, 0.0143]]])
     # w/o error
-    values_1 = np.array([[0.9410, 0.4421, 0.2102, 0.2931, 0.5084], [0.8520, 0.9633, 0.3652, 0.5632, 0.3695], [0.6985, 0.4052, 0.8741, 0.9537, 0.6147]])
-    values_2 = np.array([[0.6507, 0.5888, 0.0784, 0.4622, 0.3905], [0.9873, 0.3803, 0.3297, 0.3855, 0.6573], [0.8326, 0.1652, 0.0235, 0.7906, 0.8511]])
+    values_1 = np.array([[0.9410, 0.4421, 0.2102, 0.2931, 0.5084], [0.8520, 0.9633, 0.3652, 0.5632, 0.3695],
+                         [0.6985, 0.4052, 0.8741, 0.9537, 0.6147]])
+    values_2 = np.array([[0.6507, 0.5888, 0.0784, 0.4622, 0.3905], [0.9873, 0.3803, 0.3297, 0.3855, 0.6573],
+                         [0.8326, 0.1652, 0.0235, 0.7906, 0.8511]])
 
     cross_tasks_plot(matrics_name, method_name, n_task, save_name, values_error_1, values_error_2, error_bar=True)

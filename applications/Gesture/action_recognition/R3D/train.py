@@ -1,40 +1,21 @@
-import numpy as np
-import pickle
+import argparse
 import os
-from PIL import Image
-import time
-from tqdm import tqdm, trange
-import shutil
-from random import randint
-import argparse
-import glob
 import pdb
-import random
-import math
-import time
-import argparse
-import matplotlib.pyplot as plt
-from copy import deepcopy
-import torchvision.transforms as transforms
-import torchvision.models as models
-import torch.nn as nn
-import torch.optim as optim
-import torch
-from torch.autograd import Variable
-from torch.optim import lr_scheduler
-from torch.utils.data import Dataset, DataLoader, RandomSampler
-from torchsummary import summary
+import warnings
 
-from models import resnext
-from model import generate_model
-import utils
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
+from dataset import dataset_EgoGesture
+from dataset.temporal_transforms import *
 # from dataset.spatial_transforms import *
 from dataset.transforms import *
-from dataset.temporal_transforms import *
-from dataset import dataset_EgoGesture
+from model import generate_model
+from torch.utils.data import DataLoader
+from torchsummary import summary
+from tqdm import tqdm, trange
 
-import warnings
-import os
+import utils
 
 # os.environ['CUDA_VISIBLE_DEVICES']='3'
 warnings.filterwarnings("ignore")

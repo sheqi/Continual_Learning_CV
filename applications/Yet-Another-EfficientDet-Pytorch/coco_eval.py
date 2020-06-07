@@ -10,18 +10,17 @@ change compound_coef
 
 """
 
+import argparse
 import json
 import os
 
-import argparse
 import torch
 import yaml
-from tqdm import tqdm
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
-
 from backbone import EfficientDetBackbone
 from efficientdet.utils import BBoxTransform, ClipBoxes
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+from tqdm import tqdm
 from utils.utils import preprocess, invert_affine, postprocess
 
 ap = argparse.ArgumentParser()

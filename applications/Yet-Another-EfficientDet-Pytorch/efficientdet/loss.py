@@ -1,10 +1,9 @@
-import torch
-import torch.nn as nn
 import cv2
 import numpy as np
-
+import torch
+import torch.nn as nn
 from efficientdet.utils import BBoxTransform, ClipBoxes
-from utils.utils import postprocess, invert_affine, display
+from utils.utils import postprocess, display
 
 
 def calc_iou(a, b):

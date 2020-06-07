@@ -2,8 +2,8 @@
 
 import math
 
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class Conv2dStaticSamePadding(nn.Module):

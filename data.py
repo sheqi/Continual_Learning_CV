@@ -1,11 +1,10 @@
-import copy
-import numpy as np
-from torchvision import datasets, transforms
-from torch.utils.data import ConcatDataset, Dataset
-import torch
+from torchvision import transforms
 import glob
+
+import torch
 from PIL import Image
-import os
+from torch.utils.data import Dataset
+from torchvision import transforms
 
 my_transform = transforms.Compose([transforms.ToTensor()])
 

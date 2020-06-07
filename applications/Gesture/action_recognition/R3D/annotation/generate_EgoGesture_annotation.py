@@ -3,11 +3,11 @@ This script creates annotation file for training, validation and testing.
 Run this file first before processing anything
 """
 
-import pandas as pd
 import os
-import pdb
-from tqdm import tqdm, trange
+
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 
 # label files stored path
 label_path = '/home/data/egogesture/labels-final-revised1'

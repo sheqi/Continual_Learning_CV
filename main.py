@@ -12,10 +12,8 @@ import pickle
 import torch
 from torch import optim
 
-import utils
 from param_stamp import get_param_stamp, get_param_stamp_from_args
 import evaluate
-from data import get_multitask_experiment
 from lib.encoder import Classifier
 from lib.vae_models import AutoEncoder
 import lib.callbacks as cb
@@ -23,19 +21,16 @@ from lib.train import train_cl
 from lib.continual_learner import ContinualLearner
 from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
-import lib.visual_plt
 
 RESULT_DIR = './results'
-# use binary (instead of multi-class) classication loss
-# BCE = True
-# size of latent representation
 
 parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
-parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods', help='draw plots for cross methods')
+parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods',
+                    help='draw plots for cross methods')
 parser.add_argument('--vis-cross-tasks', action='store_true', dest='cross_tasks', help='draw plots for cross tasks')
 parser.add_argument('--matrices', type=str, nargs='+', default=['ACC', 'BWT', 'FWT', 'Overall ACC'])
 parser.add_argument('--seed', type=int, default=7)
@@ -96,7 +91,7 @@ parser.add_argument('--sample-n', type=int, default=64)
 
 
 def run(args):
-    result_path = os.path.join('./precision_onEachTask', args.savepath)
+    result_path = os.path.join('./benchmarks/results', args.savepath)
     savepath = result_path + '/' + str(datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')) + '.csv'
     if not os.path.exists(result_path):
         print('no exist the path and create one ...')

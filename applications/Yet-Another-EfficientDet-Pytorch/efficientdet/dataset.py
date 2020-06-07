@@ -1,10 +1,10 @@
 import os
-import torch
-import numpy as np
 
-from torch.utils.data import Dataset, DataLoader
-from pycocotools.coco import COCO
 import cv2
+import numpy as np
+import torch
+from pycocotools.coco import COCO
+from torch.utils.data import Dataset
 
 
 class CocoDataset(Dataset):

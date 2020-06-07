@@ -1,8 +1,8 @@
-import numpy as np
-import struct
-from PIL import Image
-import matplotlib.pyplot as plt
 import os
+import struct
+
+import numpy as np
+from PIL import Image
 
 
 class DataUtils(object):
