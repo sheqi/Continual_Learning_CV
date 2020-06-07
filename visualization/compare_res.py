@@ -5,9 +5,11 @@ from math import pi
 import random
 import pandas as pd
 
+
 def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.jpg',
-                    color=['#B6BFF2', '#04C4D9', '#F2C12E', '#F26363', '#BF7E04', '#7F2F56', '#E8B9B5', '#63CAF3', '#F27405', '#68BD44'],
-                    spider=True, bar=False):
+                       color=['#B6BFF2', '#04C4D9', '#F2C12E', '#F26363', '#BF7E04', '#7F2F56', '#E8B9B5', '#63CAF3',
+                              '#F27405', '#68BD44'],
+                       spider=True, bar=False):
     '''
      Comparison of experimental results among methods
     :param matrics_name: selected performance matrics, e.g. ['BWT','ACC', 'FWT']
@@ -64,7 +66,7 @@ def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.j
 
         # Add legend
         plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
-        plt.savefig(save_name+'_spider'+postfix)
+        plt.savefig(save_name + '_spider' + postfix)
 
     if bar:
         ax = df.plot.bar(rot=0, color=color[:len(method_name)], width=0.8)
@@ -84,6 +86,7 @@ def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.j
         ax.set_xticklabels(df["matrices\method"])
         ax.grid()
         plt.savefig(save_name + '_bar' + postfix)
+
 
 if __name__ == '__main__':
     matrics_name = ['BWT', 'ACC', 'FWT', 'Overall Accuracy']

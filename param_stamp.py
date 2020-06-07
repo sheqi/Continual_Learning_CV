@@ -2,6 +2,7 @@ import data
 from lib.encoder import Classifier
 from lib.vae_models import AutoEncoder
 
+
 def get_param_stamp_from_args(args):
     '''To get param-stamp a bit quicker.'''
 
@@ -36,10 +37,9 @@ def get_param_stamp_from_args(args):
 
     model_name = model.name
     replay_model_name = generator.name if train_gen else None
-    param_stamp = get_param_stamp(args, model_name, verbose=False, replay=False if (args.replay=="none") else True,
+    param_stamp = get_param_stamp(args, model_name, verbose=False, replay=False if (args.replay == "none") else True,
                                   replay_model_name=replay_model_name)
     return param_stamp
-
 
 
 def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_name=None):
@@ -48,7 +48,7 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
     # -for model
     model_stamp = model_name
     if verbose:
-        print(" --> model:         "+model_stamp)
+        print(" --> model:         " + model_stamp)
 
     # -for hyper-parameters
     hyper_stamp = "{i_e}{num}-lr{lr}{lrg}-b{bsz}-{optim}".format(
@@ -65,15 +65,15 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
             l=args.ewc_lambda,
             fi="{}{}".format("N" if args.fisher_n is None else args.fisher_n, "E" if args.emp_fi else ""),
             o="-O{}".format(args.gamma) if args.online else "",
-        ) if (args.ewc_lambda>0 and args.ewc) else ""
-        si_stamp = "SI{c}-{eps}".format(c=args.si_c, eps=args.epsilon) if (args.si_c>0 and args.si) else ""
+        ) if (args.ewc_lambda > 0 and args.ewc) else ""
+        si_stamp = "SI{c}-{eps}".format(c=args.si_c, eps=args.epsilon) if (args.si_c > 0 and args.si) else ""
         both = "--" if (args.ewc_lambda > 0 and args.ewc) and (args.si_c > 0 and args.si) else ""
         if verbose and args.ewc_lambda > 0 and args.ewc:
             print(" --> EWC:           " + ewc_stamp)
-        if verbose and args.si_c>0 and args.si:
+        if verbose and args.si_c > 0 and args.si:
             print(" --> SI:            " + si_stamp)
     ewc_stamp = "--{}{}{}".format(ewc_stamp, both, si_stamp) if (
-        hasattr(args, 'ewc') and ((args.ewc_lambda > 0 and args.ewc) or (args.si_c > 0 and args.si))
+            hasattr(args, 'ewc') and ((args.ewc_lambda > 0 and args.ewc) or (args.si_c > 0 and args.si))
     ) else ""
 
     # -for replay
@@ -83,7 +83,8 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
             KD="-KD{}".format(args.temp) if args.distill else "",
             model="" if (replay_model_name is None) else "-{}".format(replay_model_name),
             gi="-gi{}".format(args.gen_iters) if (
-                hasattr(args, "gen_iters") and (replay_model_name is not None) and (not args.iters==args.gen_iters)
+                    hasattr(args, "gen_iters") and (replay_model_name is not None) and (
+                not args.iters == args.gen_iters)
             ) else ""
         )
         if verbose:
