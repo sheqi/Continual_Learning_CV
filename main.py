@@ -29,8 +29,9 @@ parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
-parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods',
-                    help='draw plots for cross methods')
+
+parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods', help='draw plots for cross methods')
+parser.add_argument('--vis-cross-methods-type', nargs='+', default=['spider'], dest='cross_methods_type', help='alternatives=[\'spider\', \'bar\']')
 parser.add_argument('--vis-cross-tasks', action='store_true', dest='cross_tasks', help='draw plots for cross tasks')
 parser.add_argument('--matrices', type=str, nargs='+', default=['ACC', 'BWT', 'FWT', 'Overall ACC'])
 parser.add_argument('--seed', type=int, default=7)
@@ -358,6 +359,10 @@ def run(args):
     print('The selected performance matrices are:', matrices_names)
     if args.cross_methods:
         print('==>  Drawing results for cross selected-methods ... <==')
+        if 'spider' in args.cross_methods_type:
+            spider = True
+        if 'bar' in args.cross_methods_type:
+            bar = True
     if args.cross_tasks:
         print('==>  Drawing results for cross tasks ... <==')
 
