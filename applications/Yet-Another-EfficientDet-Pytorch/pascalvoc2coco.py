@@ -2,11 +2,12 @@
 # date: 2020.5.3
 # for converting the pascal voc dataset to coco dataset with .json files
 
-import os
 import json
+import os
 import xml.etree.ElementTree as ET
-import numpy as np
+
 import cv2
+import numpy as np
 
 
 def _isArrayLike(obj):

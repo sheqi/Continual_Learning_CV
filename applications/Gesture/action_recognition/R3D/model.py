@@ -1,9 +1,8 @@
-import torch
-from torch import nn
-import pdb
 from copy import deepcopy
-import pdb
+
+import torch
 from models import resnet, resnext, resnetl, c3d
+from torch import nn
 
 
 def generate_model(opt):

@@ -1,8 +1,7 @@
 import random
-import math
+
 import numpy as np
 from numpy.random import randint
-import pdb
 
 
 class LoopPadding(object):

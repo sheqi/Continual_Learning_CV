@@ -1,10 +1,12 @@
 import abc
+import copy
+
+import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+
 import utils
-import copy
-import numpy as np
 
 
 class ExemplarHandler(nn.Module, metaclass=abc.ABCMeta):

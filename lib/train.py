@@ -1,18 +1,19 @@
-import torch
-from torch import optim
-from torch.utils.data import ConcatDataset
-import numpy as np
-import tqdm
 import copy
-import utils
-import time
-from data import SubDataset, ExemplarDataset
-from continual_learner import ContinualLearner
-import evaluate
-import datetime
-import os
 import csv
 import datetime
+import os
+import time
+
+import numpy as np
+import torch
+import tqdm
+from continual_learner import ContinualLearner
+from torch import optim
+from torch.utils.data import ConcatDataset
+
+import evaluate
+import utils
+from data import SubDataset, ExemplarDataset
 
 output = []
 output5 = []

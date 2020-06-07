@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 import os
+
 import numpy as np
-from param_stamp import get_param_stamp_from_args
 import visual_plt
+
 import main
+from param_stamp import get_param_stamp_from_args
 
 description = 'Compare two ways of using task-ID info (with different CL strategies) on permuted / split MNIST.'
 parser = argparse.ArgumentParser('./_compare_taskID.py', description=description)

@@ -1,11 +1,11 @@
-import torch
 from torch.nn import functional as F
+
+import utils
 from backbones.MLP import MLP
 from backbones.VGG import vgg16
-from lib.exemplars import ExemplarHandler
 from lib.continual_learner import ContinualLearner
+from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
-import utils
 
 
 class Classifier(ContinualLearner, Replayer, ExemplarHandler):

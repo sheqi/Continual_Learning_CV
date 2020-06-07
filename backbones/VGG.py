@@ -1,5 +1,6 @@
-from torch import nn
 import math
+
+from torch import nn
 
 
 class VGG(nn.Module):

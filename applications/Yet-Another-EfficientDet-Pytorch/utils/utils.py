@@ -1,22 +1,19 @@
 # Author: Zylo117
 
+import math
 import os
+import uuid
+from glob import glob
+from typing import Union
 
 import cv2
 import numpy as np
 import torch
-from glob import glob
-from torch import nn
-from torchvision.ops import nms
-from torchvision.ops.boxes import batched_nms
-from typing import Union
-import uuid
-
-from utils.sync_batchnorm import SynchronizedBatchNorm2d
-
-from torch.nn.init import _calculate_fan_in_and_fan_out, _no_grad_normal_
-import math
 import webcolors
+from torch import nn
+from torch.nn.init import _calculate_fan_in_and_fan_out, _no_grad_normal_
+from torchvision.ops.boxes import batched_nms
+from utils.sync_batchnorm import SynchronizedBatchNorm2d
 
 
 def invert_affine(metas: Union[float, list, tuple], preds):

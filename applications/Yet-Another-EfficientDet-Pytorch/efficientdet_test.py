@@ -4,15 +4,13 @@
 Simple Inference Script of EfficientDet-Pytorch
 """
 import time
-import torch
-from torch.backends import cudnn
-from matplotlib import colors
 
-from backbone import EfficientDetBackbone
 import cv2
 import numpy as np
-
+import torch
+from backbone import EfficientDetBackbone
 from efficientdet.utils import BBoxTransform, ClipBoxes
+from torch.backends import cudnn
 from utils.utils import preprocess, invert_affine, postprocess, STANDARD_COLORS, standard_to_bgr, get_index_label, \
     plot_one_box
 

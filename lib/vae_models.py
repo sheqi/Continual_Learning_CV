@@ -1,5 +1,6 @@
 import torch
 from torch.nn import functional as F
+
 import utils
 from backbones.MLP import MLP, fc_layer, fc_layer_split
 from lib.replayer import Replayer
