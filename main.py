@@ -37,6 +37,9 @@ parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
+parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods', help='draw plots for cross methods')
+parser.add_argument('--vis-cross-tasks', action='store_true', dest='cross_tasks', help='draw plots for cross tasks')
+parser.add_argument('--matrices', type=str, nargs='+', default=['ACC', 'BWT', 'FWT', 'Overall ACC'])
 
 parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--cumulative', type=int, default=0, dest='cul')
@@ -330,6 +333,40 @@ def run(args):
         sample_cbs=sample_cbs, eval_cbs=eval_cbs, loss_cbs=generator_loss_cbs if args.feedback else solver_loss_cbs,
         eval_cbs_exemplars=eval_cbs_exemplars, use_exemplars=args.use_exemplars, add_exemplars=args.add_exemplars,
     )
+
+    # -------------------------------------------------------------------------------------------------#
+
+    # --------------------#
+    # -- VISUALIZATION ---#
+    # --------------------#
+
+    matrices_names = args.matrices
+    method_names = []
+    if args.cul == 1:
+        method_names.append('Cumulative')
+    elif args.cul == 0:
+        method_names.append('Naive')
+    if args.replay == 'current':
+        method_names.append('LwF')
+    if args.online and args.ewc:
+        method_names.append('Online EWC')
+    if args.si:
+        method_names.append('SI')
+    if args.replay == "generative" and not args.feedback and not args.distill:
+        method_names.append('DGR')
+    if args.replay == "generative" and not args.feedback and args.distill:
+        method_names.append('DGR with distillation')
+    if args.replay == "generative" and args.feedback and args.distill:
+        method_names.append('DGR with feedback')
+    if args.ewc and not args.online:
+        method_names.append('EWC')
+
+    print('The selected methods are:', method_names)
+    print('The selected performance matrices are:', matrices_names)
+    if args.cross_methods:
+        print('==>  Drawing results for cross selected-methods ... <==')
+    if args.cross_tasks:
+        print('==>  Drawing results for cross tasks ... <==')
 
 
 if __name__ == '__main__':
