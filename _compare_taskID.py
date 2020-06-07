@@ -3,7 +3,7 @@ import argparse
 import os
 
 import numpy as np
-import visual_plt
+from visualization import visual_plt
 
 import main
 from param_stamp import get_param_stamp_from_args
