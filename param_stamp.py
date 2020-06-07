@@ -45,12 +45,6 @@ def get_param_stamp_from_args(args):
 def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_name=None):
     '''Based on the input-arguments, produce a "parameter-stamp".'''
 
-    # -for task
-    multi_n_stamp = "{n}-{set}".format(n=args.tasks, set=args.scenario) if hasattr(args, "tasks") else ""
-    task_stamp = "{exp}{multi_n}".format(exp=args.experiment, multi_n=multi_n_stamp)
-    if verbose:
-        print("\n"+" --> task:          "+task_stamp)
-
     # -for model
     model_stamp = model_name
     if verbose:
@@ -111,9 +105,8 @@ def get_param_stamp(args, model_name, verbose=True, replay=False, replay_model_n
         binLoss_stamp = '--BCE'
 
     # --> combine
-    param_stamp = "{}--{}--{}{}{}{}{}{}".format(
-        task_stamp, model_stamp, hyper_stamp, ewc_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
-        "-s{}".format(args.seed) if not args.seed == 0 else "",
+    param_stamp = "{}--{}{}{}{}{}".format(
+        model_stamp, hyper_stamp, ewc_stamp, replay_stamp, exemplar_stamp, binLoss_stamp,
     )
 
     print(param_stamp)

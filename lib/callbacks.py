@@ -1,34 +1,5 @@
 import evaluate
 
-
-#########################################################
-## Callback-functions for evaluating model-performance ##
-#########################################################
-def _sample_cb(log, config, visdom=None, test_datasets=None, sample_size=64, iters_per_task=None):
-    '''Initiates function for evaluating samples of generative model.
-    [test_datasets]     None or <list> of <Datasets> (if provided, also reconstructions are shown)'''
-
-    def sample_cb(generator, batch, task=1):
-        '''Callback-function, to evaluate sample (and reconstruction) ability of the model.'''
-
-        iteration = batch if task == 1 else (task - 1) * iters_per_task + batch
-
-        if iteration % log == 0:
-
-            # Evaluate reconstruction-ability of model on [test_dataset]
-            if test_datasets is not None:
-                # Reconstruct samples from current task
-                evaluate.show_reconstruction(generator, test_datasets[task - 1], config, size=int(sample_size / 2),
-                                             visdom=visdom, task=task)
-
-            # Generate samples
-            evaluate.show_samples(generator, config, visdom=visdom, size=sample_size,
-                                  title="Generated images after {} iters in task {}".format(batch, task))
-
-    # Return the callback-function (except if neither visdom or pdf is selected!)
-    return sample_cb if (visdom is not None) else None
-
-
 def _eval_cb(log, test_datasets, precision_dict=None, iters_per_task=None,
              test_size=None, classes_per_task=None, summary_graph=True, with_exemplars=False):
     '''Initiates function for evaluating performance of classifier (in terms of precision).
@@ -40,14 +11,12 @@ def _eval_cb(log, test_datasets, precision_dict=None, iters_per_task=None,
 
         iteration = batch if task == 1 else (task - 1) * iters_per_task + batch
 
-        # evaluate the solver on multiple tasks (and log to visdom)
+        # evaluate the solver on multiple tasks
         if iteration % log == 0:
             evaluate.precision(classifier, test_datasets, task, iteration,
                                classes_per_task=classes_per_task, precision_dict=precision_dict,
                                test_size=test_size, summary_graph=summary_graph,
                                with_exemplars=with_exemplars)
-
-    ## Return the callback-function (except if neither visdom or [precision_dict] is selected!)
     return eval_cb if (precision_dict is not None) else None
 
 

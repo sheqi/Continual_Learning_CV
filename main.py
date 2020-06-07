@@ -25,7 +25,6 @@ from lib.replayer import Replayer
 import lib.visual_plt
 
 EXPERIMENT = 'mydataset'
-VISDOM = VISDOM_EXEMPLARS = None
 SEED = 7
 RESULT_DIR = './results'
 # use binary (instead of multi-class) classication loss
@@ -142,7 +141,7 @@ def run(args):
     else:
         gpu_devices = ','.join([str(id) for id in args.gpuID])
         os.environ['CUDA_VISIBLE_DEVICES'] = gpu_devices
-        print('==>  training with CUDA (GPU id: ' + str(args.GPUs) + ') ... <==')
+        print('==>  training with CUDA (GPU id: ' + str(args.gpuID) + ') ... <==')
 
     # Set random seeds
     np.random.seed(SEED)
@@ -269,7 +268,6 @@ def run(args):
         replay_model_name=generator.name if (args.replay == "generative" and not args.feedback) else None,
     )
 
-    # Prepare for plotting in visdom
     # -define [precision_dict] to keep track of performance during training for storing and for later plotting in pdf
     precision_dict = evaluate.initiate_precision_dict(args.tasks)
     precision_dict_exemplars = evaluate.initiate_precision_dict(args.tasks) if args.use_exemplars else None
@@ -280,25 +278,24 @@ def run(args):
 
     # Callbacks for reporting on and visualizing loss
     generator_loss_cbs = [
-        cb._VAE_loss_cb(log=args.loss_log, visdom=VISDOM, model=model if args.feedback else generator, tasks=args.tasks,
+        cb._VAE_loss_cb(log=args.loss_log, model=model if args.feedback else generator, tasks=args.tasks,
                         iters_per_task=args.iters if args.feedback else args.g_iters,
                         replay=False if args.replay == "none" else True)
     ] if (train_gen or args.feedback) else [None]
     solver_loss_cbs = [
-        cb._solver_loss_cb(log=args.loss_log, visdom=VISDOM, model=model, tasks=args.tasks,
+        cb._solver_loss_cb(log=args.loss_log, model=model, tasks=args.tasks,
                            iters_per_task=args.iters, replay=False if args.replay == "none" else True)
     ] if (not args.feedback) else [None]
 
     # Callbacks for evaluating and plotting generated / reconstructed samples
     sample_cbs = [
-        cb._sample_cb(log=args.sample_log, visdom=VISDOM, config=config, test_datasets=test_datasets,
+        cb._sample_cb(log=args.sample_log, config=config, test_datasets=test_datasets,
                       sample_size=args.sample_n, iters_per_task=args.iters if args.feedback else args.g_iters)
     ] if (train_gen or args.feedback) else [None]
 
     # Callbacks for reporting and visualizing accuracy
-    # -visdom (i.e., after each [prec_log]
     eval_cb = cb._eval_cb(
-        log=args.prec_log, test_datasets=test_datasets, visdom=VISDOM, precision_dict=None, iters_per_task=args.iters,
+        log=args.prec_log, test_datasets=test_datasets, precision_dict=None, iters_per_task=args.iters,
         test_size=args.prec_n, classes_per_task=classes_per_task
     )
     # -pdf / reporting: summary plots (i.e, only after each task)
@@ -306,9 +303,8 @@ def run(args):
         log=args.iters, test_datasets=test_datasets, precision_dict=precision_dict,
         iters_per_task=args.iters, classes_per_task=classes_per_task
     )
-    # -with exemplars (both for visdom & reporting / pdf)
     eval_cb_exemplars = cb._eval_cb(
-        log=args.iters, test_datasets=test_datasets, visdom=VISDOM_EXEMPLARS, classes_per_task=classes_per_task,
+        log=args.iters, test_datasets=test_datasets, classes_per_task=classes_per_task,
         precision_dict=precision_dict_exemplars, iters_per_task=args.iters,
         with_exemplars=True,
     ) if args.use_exemplars else None
