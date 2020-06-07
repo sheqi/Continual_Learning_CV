@@ -1,5 +1,5 @@
 # Continual_Learning_CV (CLCV)
-[![License: CC BY 4.0](https://img.shields.io/badge/License-BSD%203%2DClause-lightgrey.svg)](https://choosealicense.com/licenses/bsd-3-clause/)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![built with Python3.7](https://img.shields.io/badge/build%20with-python3.7-red.svg)](https://www.python.org/)
 [![built with Caffe](https://img.shields.io/badge/build%20with-pytorch-brightgreen.svg)](https://pytorch.org/)
 
