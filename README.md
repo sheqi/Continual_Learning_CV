@@ -50,6 +50,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Data Preparation
+### OpenLORIS-Object
 Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
 Step 2: Run following scripts:
@@ -65,6 +66,12 @@ Step 4: Generate the `.pkl` files of data.
  python3 pk_gene.py
  python3 pk_gene_sequence.py
 ```
+
+### MNIST and CIFAR-100
+
+Please refer to ```./benchmarks/Readme.md```. 
+
+
 ## Quickly get hands on
 
 You can directly use scripts on 9 algorithms and 2 benchmarks (may need to modify arguments/parameters in `.bash` files if necessary):
