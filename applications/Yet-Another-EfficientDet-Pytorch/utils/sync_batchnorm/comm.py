@@ -8,8 +8,8 @@
 # https://github.com/vacancy/Synchronized-BatchNorm-PyTorch
 # Distributed under MIT License.
 
-import collections
 import queue
+import collections
 import threading
 
 __all__ = ['FutureResult', 'SlavePipe', 'SyncMaster']

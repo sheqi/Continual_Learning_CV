@@ -1,10 +1,10 @@
 import os
-
-import cv2
-import numpy as np
 import torch
+import numpy as np
+
+from torch.utils.data import Dataset, DataLoader
 from pycocotools.coco import COCO
-from torch.utils.data import Dataset
+import cv2
 
 
 class CocoDataset(Dataset):
@@ -16,8 +16,7 @@ class CocoDataset(Dataset):
         # /data/coco/annotations/instances_train2017.json
         # need to be revised accordingly
         # self.coco = COCO(os.path.join(self.root_dir, 'annotations', 'instances_' + self.set_name + '.json'))  # for coco
-        self.coco = COCO(
-            os.path.join(self.root_dir, 'annotations', 'voc_2007_' + self.set_name + '.json'))  # for voc2007
+        self.coco = COCO(os.path.join(self.root_dir, 'annotations', 'voc_2007_' + self.set_name + '.json'))      # for voc2007
 
         self.image_ids = self.coco.getImgIds()
 
@@ -116,7 +115,7 @@ def collater(data):
 
 class Resizer(object):
     """Convert ndarrays in sample to Tensors."""
-
+    
     def __init__(self, img_size=512):
         self.img_size = img_size
 

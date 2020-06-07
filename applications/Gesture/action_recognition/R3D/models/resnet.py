@@ -1,10 +1,9 @@
-import math
-from functools import partial
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+import math
+from functools import partial
 
 __all__ = [
     'ResNet', 'resnet10'
@@ -211,6 +210,8 @@ def get_fine_tuning_parameters(model, ft_begin_index):
             parameters.append({'params': v, 'lr': 0.0})
 
     return parameters
+    
+
 
 
 def resnet10(**kwargs):
@@ -267,3 +268,4 @@ def resnet200(**kwargs):
     """
     model = ResNet(Bottleneck, [3, 24, 36, 3], **kwargs)
     return model
+

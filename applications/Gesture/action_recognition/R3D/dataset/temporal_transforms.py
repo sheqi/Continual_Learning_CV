@@ -1,8 +1,8 @@
 import random
-
+import math
 import numpy as np
 from numpy.random import randint
-
+import pdb
 
 class LoopPadding(object):
 
@@ -97,6 +97,11 @@ class TemporalCenterCrop(object):
         return out
 
 
+
+
+
+
+
 class TemporalRandomCrop(object):
     """Temporally crop the given frame indices at a random location.
     If the number of frames is less than the size,
@@ -144,10 +149,14 @@ class TemporalUniformCrop(object):
             for index in out:
                 if len(out) >= self.size:
                     break
-                out.append(index)
-        return out
+                out.append(index)              
+        return out    
 
-    # class TemporalUniformCrop(object):
+
+
+
+
+# class TemporalUniformCrop(object):
 #     """Temporally crop the given frame indices at a center.
 #     If the number of frames is less than the size,
 #     loop the indices as many times as necessary to satisfy the size.

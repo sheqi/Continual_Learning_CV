@@ -13,6 +13,7 @@ import contextlib
 
 import torch
 import torch.nn.functional as F
+
 from torch.nn.modules.batchnorm import _BatchNorm
 
 try:
@@ -120,7 +121,7 @@ class _SynchronizedBatchNorm(_BatchNorm):
 
         outputs = []
         for i, rec in enumerate(intermediates):
-            outputs.append((rec[0], _MasterMessage(*broadcasted[i * 2:i * 2 + 2])))
+            outputs.append((rec[0], _MasterMessage(*broadcasted[i*2:i*2+2])))
 
         return outputs
 
