@@ -1,5 +1,6 @@
 import evaluate
 
+
 def _eval_cb(log, test_datasets, precision_dict=None, iters_per_task=None,
              test_size=None, classes_per_task=None, summary_graph=True, with_exemplars=False):
     '''Initiates function for evaluating performance of classifier (in terms of precision).
@@ -17,6 +18,7 @@ def _eval_cb(log, test_datasets, precision_dict=None, iters_per_task=None,
                                classes_per_task=classes_per_task, precision_dict=precision_dict,
                                test_size=test_size, summary_graph=summary_graph,
                                with_exemplars=with_exemplars)
+
     return eval_cb if (precision_dict is not None) else None
 
 

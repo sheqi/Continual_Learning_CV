@@ -66,7 +66,7 @@ def cross_methods_plot(matrics_name, method_name, values, save_name, postfix='.j
 
         # Add legend
         plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
-        plt.savefig(save_name+'_spider'+postfix)
+        plt.savefig(save_name + '_spider' + postfix)
 
     if bar:
         ax = df.plot.bar(rot=0, color=color[:len(method_name)], width=0.8)
