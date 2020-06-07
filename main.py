@@ -24,7 +24,6 @@ from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
 import lib.visual_plt
 
-EXPERIMENT = 'mydataset'
 SEED = 7
 RESULT_DIR = './results'
 # use binary (instead of multi-class) classication loss
