@@ -41,7 +41,6 @@ class Classifier(ContinualLearner, Replayer, ExemplarHandler):
         print('************* num of classes in encoder: ' + str(classes))
         self.vgg = vgg16(classes)
 
-
     def list_init_layers(self):
         '''Return list of modules whose parameters could be initialized differently (i.e., conv- or fc-layers).'''
         list = []

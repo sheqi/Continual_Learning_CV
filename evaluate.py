@@ -51,8 +51,7 @@ def validate(model, dataset, batch_size=32, test_size=1024, verbose=True, allowe
 
 
 def validate5(model, dataset, batch_size=32, test_size=1024, verbose=True, allowed_classes=None,
-             with_exemplars=False, task=None):
-
+              with_exemplars=False, task=None):
     '''Evaluate precision (= accuracy or proportion correct) of a classifier ([model]) on [dataset].
     [allowed_classes]   None or <list> containing all "active classes" between which should be chosen
                             (these "active classes" are assumed to be contiguous)'''
@@ -119,7 +118,7 @@ def precision(model, datasets, current_task, iteration, classes_per_task=None,
             allowed_classes = None
             precs.append(validate(model, datasets[i], test_size=test_size, verbose=verbose,
                                   allowed_classes=allowed_classes, with_exemplars=with_exemplars,
-                                  task=i+1))
+                                  task=i + 1))
         else:
             precs.append(0)
     average_precs = sum([precs[task_id] for task_id in range(current_task)]) / current_task

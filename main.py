@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+
 sys.path.append('./lib')
 
 import argparse
@@ -24,18 +25,17 @@ from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
 import lib.visual_plt
 
-SEED = 7
 RESULT_DIR = './results'
 # use binary (instead of multi-class) classication loss
 # BCE = True
 # size of latent representation
-Z_DIM = 100
 
 parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
+parser.add_argument('--seed', type=int, default=7)
 
 parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--cumulative', type=int, default=0, dest='cul')
@@ -58,6 +58,7 @@ replay_choices = ['offline', 'exact', 'generative', 'none', 'current', 'exemplar
 parser.add_argument('--replay', type=str, default='none', choices=replay_choices)
 parser.add_argument('--distill', action='store_true')
 parser.add_argument('--temp', type=float, default=2., dest='temp')
+parser.add_argument('--z_dim', type=int, default=100)
 
 parser.add_argument('--g-z-dim', type=int, default=100)
 parser.add_argument('--g-fc-lay', type=int)
@@ -143,10 +144,10 @@ def run(args):
         print('==>  training with CUDA (GPU id: ' + str(args.gpuID) + ') ... <==')
 
     # Set random seeds
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
     if cuda:
-        torch.cuda.manual_seed(SEED)
+        torch.cuda.manual_seed(args.seed)
 
     if args.factor == 'sequence':
         args.tasks = 12
@@ -175,7 +176,7 @@ def run(args):
     if args.feedback:
         model = AutoEncoder(
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
-            fc_layers=args.fc_lay, fc_units=args.g_fc_uni, z_dim=Z_DIM,
+            fc_layers=args.fc_lay, fc_units=args.g_fc_uni, z_dim=args.z_dim,
             fc_drop=args.fc_drop, fc_bn=True if args.fc_bn == "yes" else False, fc_nl=args.fc_nl,
         ).to(device)
         model.lamda_pl = 1.  # --> to make that this VAE is also trained to classify
@@ -243,7 +244,7 @@ def run(args):
         # -specify architecture
         generator = AutoEncoder(
             image_size=config['size'], image_channels=config['channels'],
-            fc_layers=args.g_fc_lay, fc_units=args.g_fc_uni, z_dim=100, classes=config['classes'],
+            fc_layers=args.g_fc_lay, fc_units=args.g_fc_uni, z_dim=args.z_dim, classes=config['classes'],
             fc_drop=args.fc_drop, fc_bn=True if args.fc_bn == "yes" else False, fc_nl=args.fc_nl,
         ).to(device)
         # -set optimizer(s)
@@ -310,8 +311,6 @@ def run(args):
     # -collect them in <lists>
     eval_cbs = [eval_cb, eval_cb_full]
     eval_cbs_exemplars = [eval_cb_exemplars]
-
-    # -------------------------------------------------------------------------------------------------#
 
     # --------------------#
     # ----- TRAINING -----#

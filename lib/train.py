@@ -150,7 +150,6 @@ def train_cl(model, train_datasets, test_datasets, replay_mode="none", classes_p
                 scores_ = all_scores_
                 _, y_ = torch.max(scores_, dim=1)
 
-
                 # Only keep predicted y/scores if required (as otherwise unnecessary computations will be done)
                 y_ = y_ if (model.replay_targets == "hard") else None
                 scores_ = scores_ if (model.replay_targets == "soft") else None
