@@ -1,10 +1,24 @@
-import os
-
+import os 
+import sys
 # sys.path.append(os.getcwd()[0:-7])
 # sys.path.append(os.path.join(os.getcwd()[0:-7], 'utils'))
+import pickle
+import numpy as np
 import pandas as pd
+import random
+import torch
+import pdb
+from torch.utils.data import Dataset, DataLoader,RandomSampler
+import torchvision.transforms as transforms
+from torchvision.utils import save_image
 from PIL import Image
-from torch.utils.data import Dataset
+import matplotlib.pyplot as plt
+from tqdm import tqdm, trange
+import random
+import skimage.util as ski_util
+from sklearn.utils import shuffle
+
+
 
 
 # pdb.set_trace()
@@ -23,9 +37,9 @@ def load_video(annot_path, mode):
     # get task index in dataframe
     task_ind = []
     for frame_i in range(annot_df.shape[0]):
-        rgb_list = annot_df['rgb'].iloc[frame_i]  # convert string in dataframe to list
+        rgb_list = annot_df['rgb'].iloc[frame_i] # convert string in dataframe to list
         rgb_samples.append(rgb_list)
-        depth_list = annot_df['depth'].iloc[frame_i]  # convert string in dataframe to list
+        depth_list = annot_df['depth'].iloc[frame_i] # convert string in dataframe to list
         depth_samples.append(depth_list)
         labels.append(annot_df['label'].iloc[frame_i])
         # data augmentation by reversing the sequence of the video
@@ -60,9 +74,12 @@ class dataset_video(Dataset):
         clip_depth_frames = self.spatial_transform(clip_depth_frames)
         return clip_rgb_frames, clip_depth_frames, int(label)
         # return rgb, mask, (torch.tensor(label)-1).long()
-
     def __len__(self):
         return int(self.sample_num)
+
+
+
+
 
 # from temporal_transforms import *
 # from spatial_transforms import *
@@ -91,6 +108,7 @@ class dataset_video(Dataset):
 
 # dataset_train = dataset_video(annot_path, 'train', spatial_transform=trans_train, temporal_transform = temporal_transform_)
 # rgb, depth, label = dataset_train.__getitem__(0)
+
 
 
 # # dataloader_train = DataLoader(dataset_train, batch_size=32,

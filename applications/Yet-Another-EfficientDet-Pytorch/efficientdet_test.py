@@ -4,15 +4,16 @@
 Simple Inference Script of EfficientDet-Pytorch
 """
 import time
+import torch
+from torch.backends import cudnn
+from matplotlib import colors
 
+from backbone import EfficientDetBackbone
 import cv2
 import numpy as np
-import torch
-from backbone import EfficientDetBackbone
+
 from efficientdet.utils import BBoxTransform, ClipBoxes
-from torch.backends import cudnn
-from utils.utils import preprocess, invert_affine, postprocess, STANDARD_COLORS, standard_to_bgr, get_index_label, \
-    plot_one_box
+from utils.utils import preprocess, invert_affine, postprocess, STANDARD_COLORS, standard_to_bgr, get_index_label, plot_one_box
 
 compound_coef = 0
 force_input_size = None  # set None to use default size
@@ -40,6 +41,7 @@ obj_list = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train'
             'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
             'refrigerator', '', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
             'toothbrush']
+
 
 color_list = standard_to_bgr(STANDARD_COLORS)
 # tf bilinear interpolation is different from any other's, just make do
@@ -77,7 +79,6 @@ with torch.no_grad():
                       regressBoxes, clipBoxes,
                       threshold, iou_threshold)
 
-
 def display(preds, imgs, imshow=True, imwrite=False):
     for i in range(len(imgs)):
         if len(preds[i]['rois']) == 0:
@@ -87,8 +88,8 @@ def display(preds, imgs, imshow=True, imwrite=False):
             x1, y1, x2, y2 = preds[i]['rois'][j].astype(np.int)
             obj = obj_list[preds[i]['class_ids'][j]]
             score = float(preds[i]['scores'][j])
-            plot_one_box(imgs[i], [x1, y1, x2, y2], label=obj, score=score,
-                         color=color_list[get_index_label(obj, obj_list)])
+            plot_one_box(imgs[i], [x1, y1, x2, y2], label=obj,score=score,color=color_list[get_index_label(obj, obj_list)])
+
 
         if imshow:
             cv2.imshow('img', imgs[i])

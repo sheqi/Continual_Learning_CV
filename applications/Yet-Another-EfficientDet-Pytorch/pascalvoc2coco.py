@@ -2,18 +2,17 @@
 # date: 2020.5.3
 # for converting the pascal voc dataset to coco dataset with .json files
 
-import json
 import os
+import json
 import xml.etree.ElementTree as ET
-
-import cv2
 import numpy as np
-
-
+import cv2
+ 
+ 
 def _isArrayLike(obj):
     return hasattr(obj, '__iter__') and hasattr(obj, '__len__')
-
-
+ 
+ 
 class voc2coco:
     def __init__(self, devkit_path=None, year=None):
         self.classes = ('__background__',
@@ -27,17 +26,17 @@ class voc2coco:
         #                 "cup", "earphone", "french fries", "gutta pertscha","lipstick",
         #                 "milk", "orange","orange juice","oreo","sausage",
         #                 "shampoo","spray", "tissue","toothbrush", "toothpaste")
-
+ 
         self.num_classes = len(self.classes)
         self.data_path = devkit_path
         # print('devkit_path:', devkit_path)
         # print('self.data_path:', self.data_path)
-        self.annotaions_path = os.path.join(self.data_path, 'VOC2007', 'Annotations')
-        self.image_set_path = os.path.join(self.data_path, 'VOC2007', 'ImageSets')
+        self.annotaions_path = os.path.join(self.data_path,'VOC2007', 'Annotations')
+        self.image_set_path = os.path.join(self.data_path,'VOC2007', 'ImageSets')
         self.year = year
         self.categories_to_ids_map = self._get_categories_to_ids_map()
         self.categories_msg = self._categories_msg_generator()
-
+ 
     def _load_annotation(self, ids=[]):
         ids = ids if _isArrayLike(ids) else [ids]
         image_msg = []
@@ -114,17 +113,14 @@ class voc2coco:
                              }
             image_msg.append(one_image_msg)
         return image_msg, annotation_msg
-
     def _bbox_to_mask(self, bbox):
         assert len(bbox) == 4, 'Wrong bndbox!'
         mask = [bbox[0], bbox[2], bbox[0], bbox[3], bbox[1], bbox[3], bbox[1], bbox[2]]
         return [mask]
-
     def _bbox_area_computer(self, bbox):
         width = bbox[1] - bbox[0]
         height = bbox[3] - bbox[2]
         return width * height
-
     def _save_json_file(self, filename=None, data=None):
         json_path = os.path.join(self.data_path, 'cocoformatJson')
         assert filename is not None, 'lack filename'
@@ -135,10 +131,8 @@ class voc2coco:
         assert type(data) == type(dict()), 'data format {} not supported'.format(type(data))
         with open(os.path.join(json_path, filename), 'w') as f:
             f.write(json.dumps(data))
-
     def _get_categories_to_ids_map(self):
         return dict(zip(self.classes, range(self.num_classes)))
-
     def _get_all_indexs(self):
         ids = []
         for root, dirs, files in os.walk(self.annotaions_path, topdown=False):
@@ -148,7 +142,6 @@ class voc2coco:
                     ids.append(id)
         assert ids is not None, 'There is none xml file in {}'.format(self.annotaions_path)
         return ids
-
     def _get_indexs_by_image_set(self, image_set=None):
         if image_set is None:
             return self._get_all_indexs()
@@ -160,7 +153,6 @@ class voc2coco:
             with open(image_set_path) as f:
                 ids = [x.strip() for x in f.readlines()]
             return ids
-
     def _points_to_mbr(self, points):
         assert _isArrayLike(points), 'Points should be array like!'
         x = [point[0] for point in points]
@@ -170,7 +162,6 @@ class voc2coco:
         height = ymax - ymin
         width = xmax - xmin
         return [xmin, ymin, width, height]
-
     def _categories_msg_generator(self):
         categories_msg = []
         for category in self.classes:
@@ -182,7 +173,6 @@ class voc2coco:
                                   }
             categories_msg.append(one_categories_msg)
         return categories_msg
-
     def _area_computer(self, points):
         assert _isArrayLike(points), 'Points should be array like!'
         tmp_contour = []
@@ -191,11 +181,9 @@ class voc2coco:
         contour = np.array(tmp_contour, dtype=np.int32)
         area = cv2.contourArea(contour)
         return area
-
     def voc_to_coco_converter(self):
         # can be revised according to the train val settings
-        img_sets = ['trainval', 'test', 'trainvalStep0', 'trainvalStep1', 'trainvalStep2', 'trainvalStep3', 'testStep0',
-                    'testStep1', 'testStep2', 'testStep3']
+        img_sets = ['trainval', 'test', 'trainvalStep0', 'trainvalStep1', 'trainvalStep2', 'trainvalStep3', 'testStep0', 'testStep1', 'testStep2', 'testStep3']
         for img_set in img_sets:
             ids = self._get_indexs_by_image_set(img_set)
             img_msg, ann_msg = self._load_annotation(ids)
@@ -205,14 +193,11 @@ class voc2coco:
                            "categories": self.categories_msg}
             self._save_json_file('voc_' + self.year + '_' + img_set, result_json)
 
-
 def demo():
     # 转换pascal地址是'./VOC2007/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt'
 
     # need to be revised by user
     converter = voc2coco('/data/VOCdevkit2007/', '2007')
     converter.voc_to_coco_converter()
-
-
 if __name__ == "__main__":
     demo()

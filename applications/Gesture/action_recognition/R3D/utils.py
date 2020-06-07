@@ -1,21 +1,40 @@
 import csv
 import os
-
-import numpy as np
 import torch
+import pdb
+import numpy as np
+
+
 
 
 def load_checkpoint(save_dir, filename):
     checkpoint = torch.load(os.path.join(save_dir, filename), map_location='cpu')
     return checkpoint
 
-
 def save_checkpoint(net, optimizer, step, save_dir, filename):
     checkpoint = {
-        'state_dict': net.state_dict(),
-        'step': step,
-        'optimizer': optimizer.state_dict()}
+            'state_dict': net.state_dict(),
+            'step': step,
+            'optimizer' : optimizer.state_dict()}
     torch.save(checkpoint, os.path.join(save_dir, filename))
+
+
+def accuracy(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0)
+        res.append(correct_k.mul_(100.0 / batch_size))
+    return res
+
+
 
 
 def adjust_learning_rate(learning_rate, optimizer, epoch, lr_steps):
@@ -23,6 +42,8 @@ def adjust_learning_rate(learning_rate, optimizer, epoch, lr_steps):
     lr_new = learning_rate * (0.1 ** (sum(epoch >= np.array(lr_steps))))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr_new
+
+
 
 
 class AverageMeter(object):
@@ -119,4 +140,4 @@ def calculate_precision(outputs, targets):
 
     _, pred = outputs.topk(1, 1, True)
     pred = pred.t()
-    return precision_score(targets.view(-1).cpu().numpy(), pred.view(-1).cpu().numpy(), average='macro')
+    return  precision_score(targets.view(-1).cpu().numpy(), pred.view(-1).cpu().numpy(), average = 'macro')
