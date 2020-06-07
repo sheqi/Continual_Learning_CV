@@ -1,3 +1,5 @@
+<img src="https://github.com/cityuCompuNeuroLab/Continual_Learning_CV/blob/master/lib/logo/openloris-logo.png" width="80" align="left">
+
 # Continual_Learning_CV (CLCV)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![built with Python3.7](https://img.shields.io/badge/build%20with-python3.7-red.svg)](https://www.python.org/)
