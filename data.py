@@ -18,7 +18,7 @@ class MyDataset(Dataset):
         self.labels = []
 
         if name == 'openloris':
-            datapath = glob.glob('img/{}/{}/task{}/*'.format(factor, mode, batch_num))
+            datapath = glob.glob('{}/{}/task{}/*'.format(factor, mode, batch_num))
             datapath = sorted([p for p in datapath if p[-1].isdigit()])
             for i in range(len(datapath)):
                 temp = glob.glob(datapath[i] + '/*.jpg')
@@ -28,14 +28,14 @@ class MyDataset(Dataset):
 
         elif name == 'cifar':
             for i in range(20):
-                temp = glob.glob('img/cifar/{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
+                temp = glob.glob('{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
                 self.imgs.extend([Image.open(x).convert('RGB') for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
 
         elif name == 'mnist':
             for i in range(10):
-                temp = glob.glob('img/mnist/{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
+                temp = glob.glob('{}/task{}/{}/*.png'.format(mode, batch_num, i + 1))
                 self.imgs.extend([Image.open(x).convert('RGB').resize((32, 32)) for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
