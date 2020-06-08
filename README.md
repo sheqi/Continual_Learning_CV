@@ -53,12 +53,12 @@ $ pip install -r requirements.txt
 ```
 ## Data Preparation
 
-###[1] MNIST
-###[2] CIFAR-100
+### [1] MNIST
+### [2] CIFAR-100
 Please refer to ```./benchmarks/Readme.md```. 
 
 ----------------------------------------------
-###[3] OpenLORIS-Object
+### [3] OpenLORIS-Object
 
 Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
