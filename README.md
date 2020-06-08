@@ -20,17 +20,7 @@ The paper has been accepted into ICRA 2020.
 
 Also **permutated MNIST** and **CIFAR-100** datasets are tested
 
-----------------------------------------------
-
-- [x] OpenLROIS-Object dataset configuration files;
-- [x] SOTA CL methods;
-- [x] OpenLROIS-Object sample codes;
-- [ ] More CL benchmarks: MNIST and CIFAR-100 datasets;
-- [x] Visualization tools for 4 CL metrics;
-- [x] More DL backbones: VGG-16, ResNet-18/50/101, EfficientNet;
-- [ ] **New realeases and additional applications** (in progress...)
-
-## Requirements
+## Requirements [not hard constraints]
 
 The current version of the code has been tested with following libs:
 * `pytorch 1.1.0`
@@ -52,33 +42,32 @@ $ source activate yourenvname
 $ pip install -r requirements.txt
 ```
 ## Data Preparation
+### OpenLORIS-Object
+```
+For MNIST and CIFAR-100 datasets, Please refer to ```./benchmarks/Readme.md```. 
+```
 
-### [1] MNIST
-### [2] CIFAR-100
-Please refer to ```./benchmarks/Readme.md```. 
 
-----------------------------------------------
-### [3] OpenLORIS-Object
+**Step 1**: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
-Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
-
-Step 2: Run following scripts:
+**Step 2**: Run following scripts:
 ```
  python3 benchmark1.py
  python3 benchmark2.py
 ```
 
-Step 3: Put train/test/validation file under `./img`. For more details, please follow `note` file under each sub-directories in `./img`.
+**Step 3**: Put train/test/validation file under `./img`. For more details, please follow `note` file under each sub-directories in `./img`.
 
-Step 4: Generate the `.pkl` files of data.
+**Step 4**: Generate the `.pkl` files of data.
 ```
  python3 pk_gene.py
  python3 pk_gene_sequence.py
 ```
 
-## Quickly get hands on
+## Quick Start
 
-You can directly use scripts on 9 algorithms and 2 benchmarks (may need to modify arguments/parameters in `.bash` files if necessary):
+You can directly use scripts on **9** algorithms and **2** benchmarks stated in the paper (may need to modify arguments/parameters in `.bash` files if necessary):
+
 ```
 bash clutter.bash
 bash illumination.bash
@@ -213,4 +202,30 @@ Parts of code were borrowed from [here](https://github.com/GMvandeVen/continual-
 ## Issue / Want to Contribute ? 
 Open a new issue or do a pull request in case you are facing any difficulty with the code base or if you want to contribute.
 
+
+----------------------------------------------
+## Features pending
+
+**OpenLORIS-Object base**
+- [x] OpenLROIS-Object dataset configuration files;
+- [x] OpenLROIS-Object sample codes;
+
+**CL baseline**
+- [x] SOTA CL methods;
+
+**CL benchmarks for image classification**
+- [ ] CL benchmarks: MNIST and CIFAR-100 datasets;
+
+**Visualization**
+- [x] Visualization tools for 4 CL metrics;
+- [x] DL backbones: VGG-16, ResNet-18/50/101, EfficientNet;
+
+**Applications**
+- [ ] Ego-gesture recognition;
+- [ ] Online action recognition; 
+- [ ] Constractive learning for self-supervised object segementation;
+- [ ] - [ ] Few-shot learning with object recognition;
+
+**Algorithms**
+- [ ] Robust adversial training with transfer learning;
 
