@@ -11,22 +11,25 @@ Continual Learning Toolbox for Computer Vision Tasks
 This toolbox aims at prototyping current computer vision tasks, e.g., **human gesture recognition, action localization/detection, object detection/segmentation, and person ReID** in a **continual/lifelong learning** manner. 
 It means most of the SOTAs can be updated with novel data without retraining from scratch, and at the same time, they are able to migrate from **catastrophic forgetting** problem, furthermore, the models can learn with **few-shot samples and adapt quickly** to the target domains. Since the CL strategies are quite complex and flexible, it has some intersections with recent few-shot/meta/multi-task learning work.
 
-## OpenLORIS-Object Datasets and Benchmarks
+## Datasets and Benchmarks
 We are testing the performances based on **OpenLORIS-Object dataset**. The basic codes are the implementation of the following paper: 
 
 Qi She et al, 
 [OpenLORIS-Object: A Robotic Vision Dataset and Benchmark for Lifelong Deep Learning](https://arxiv.org/pdf/1911.06487.pdf)
 The paper has been accepted into ICRA 2020. 
 
+Also **permutated MNIST** and **CIFAR-100** datasets are tested
+
 ----------------------------------------------
 
 - [x] OpenLROIS-Object dataset configuration files;
 - [x] SOTA CL methods;
 - [x] OpenLROIS-Object sample codes;
-- [x] More CL benchmarks: MNIST and CIFAR-100 datasets;
+- [ ] More CL benchmarks: MNIST and CIFAR-100 datasets;
 - [x] Visualization tools for 4 CL metrics;
 - [x] More DL backbones: VGG-16, ResNet-18/50/101, EfficientNet;
 - [ ] **New realeases and additional applications** (in progress...)
+
 ## Requirements
 
 The current version of the code has been tested with following libs:
@@ -48,9 +51,15 @@ $ conda create -n yourenvname python=3.7 anaconda
 $ source activate yourenvname
 $ pip install -r requirements.txt
 ```
-
 ## Data Preparation
-### OpenLORIS-Object
+
+### [1] MNIST
+### [2] CIFAR-100
+Please refer to ```./benchmarks/Readme.md```. 
+
+----------------------------------------------
+### [3] OpenLORIS-Object
+
 Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
 Step 2: Run following scripts:
@@ -66,11 +75,6 @@ Step 4: Generate the `.pkl` files of data.
  python3 pk_gene.py
  python3 pk_gene_sequence.py
 ```
-
-### MNIST and CIFAR-100
-
-Please refer to ```./benchmarks/Readme.md```. 
-
 
 ## Quickly get hands on
 
