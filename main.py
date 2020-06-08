@@ -40,6 +40,7 @@ parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--cumulative', type=int, default=0, dest='cul')
 parser.add_argument('--bce', action='store_true')
 parser.add_argument('--tasks', type=int, default=9)
+parser.add_argument('--dataset', type=str, default='OpenLORIS-Object', dest='dataset')
 
 parser.add_argument('--fc-layers', type=int, default=3, dest='fc_lay')
 parser.add_argument('--fc-units', type=int, default=400, metavar="N")
@@ -157,9 +158,14 @@ def run(args):
     # ----- DATA -----#
     # ----------------#
 
-    # Prepare data for chosen experiment
-    with open(args.factor + '.pk', 'rb') as f:
-        ((train_datasets, test_datasets), config, classes_per_task) = pickle.load(f)
+    # Prepare data for OpenLORIS-Object
+
+    if args.dataset == 'OpenLORIS-Object':
+        with open('./benchmarks/data/OpenLORIS-Object/' + args.factor + '.pk', 'rb') as f:
+            ((train_datasets, test_datasets), config, classes_per_task) = pickle.load(f)
+    else:
+        with open('./benchmarks/data/' + args.dataset + '/' + args.dataset + '.pk', 'rb') as f:
+            ((train_datasets, test_datasets), config, classes_per_task) = pickle.load(f)
 
     if args.cul == 1:
         for i in range(1, len(train_datasets)):

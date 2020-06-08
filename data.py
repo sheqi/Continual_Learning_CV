@@ -11,13 +11,13 @@ my_transform = transforms.Compose([transforms.ToTensor()])
 
 class MyDataset(Dataset):
 
-    def __init__(self, batch_num, name='openloris', mode='train', own_transform=None, factor='clutter'):
+    def __init__(self, batch_num, name='OpenLORIS-Object', mode='train', own_transform=None, factor='clutter'):
         batch_num += 1
         self.transform = own_transform
         self.imgs = []
         self.labels = []
 
-        if name == 'openloris':
+        if name == 'OpenLORIS-Object':
             datapath = glob.glob('{}/{}/task{}/*'.format(factor, mode, batch_num))
             datapath = sorted([p for p in datapath if p[-1].isdigit()])
             for i in range(len(datapath)):
@@ -127,7 +127,7 @@ class ExemplarDataset(Dataset):
 def get_multitask_experiment(name, tasks, only_config=False, factor='clutter'):
     classes_per_task = 0
     config = {}
-    if name == 'openloris':
+    if name == 'OpenLORIS-Object':
         tasks = 9
         classes_per_task = 69
         config = {'size': 224, 'channels': 3, 'classes': 69}

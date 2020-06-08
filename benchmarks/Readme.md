@@ -1,7 +1,7 @@
 # Add benchmarks 
 The current version includes the following datasets/benchmarks:
 * `OpenLORIS-Object`
-* `Permuated MNIST`
+* `Permutated MNIST`
 * `CIFAR-100`
 
 ## Data Preparation
@@ -24,18 +24,16 @@ Step 4: Generate the `.pkl` files of data.
  python3 pk_gene_sequence.py
 ```
 
-### Permuated MNIST
-Run following scripts.
-'''
+### Permutated MNIST
+Run the following scripts.
+```
 cd MNIST
 sh mnist.sh
-'''
+```
 
 ### CIFAR-100
-Run following scripts.
-'''
+Run the following scripts.
+```
 cd CIFAR
 sh cifar.sh
-'''
-
-Benchmark results:
+```
