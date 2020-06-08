@@ -224,7 +224,7 @@ Open a new issue or do a pull request in case you are facing any difficulty with
 - [ ] Ego-gesture recognition;
 - [ ] Online action recognition; 
 - [ ] Constractive learning for self-supervised object segementation;
-- [ ] - [ ] Few-shot learning with object recognition;
+- [ ] Few-shot learning with object recognition;
 
 **Algorithms**
 - [ ] Robust adversial training with transfer learning;
