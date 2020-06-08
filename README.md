@@ -44,7 +44,7 @@ $ pip install -r requirements.txt
 ## Data Preparation
 ### OpenLORIS-Object
 ```
-For MNIST and CIFAR-100 datasets, Please refer to ```./benchmarks/Readme.md```. 
+For MNIST and CIFAR-100 datasets, Please refer to `./benchmarks/Readme.md`. 
 ```
 
 
@@ -56,7 +56,7 @@ For MNIST and CIFAR-100 datasets, Please refer to ```./benchmarks/Readme.md```.
  python3 benchmark2.py
 ```
 
-**Step 3**: Put train/test/validation file under `./img`. For more details, please follow `note` file under each sub-directories in `./img`.
+**Step 3**: Put train/test/validation file under `./bechmakrs/data/OpenLORIS-Object`. For more details, please follow `note` file under each sub-directories in `./img`.
 
 **Step 4**: Generate the `.pkl` files of data.
 ```
