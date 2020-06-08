@@ -76,13 +76,13 @@ if __name__ == '__main__':
         os.makedirs('./train/task{}/{}/'.format(i // 2 + 1, i % 2 + 1), exist_ok=True)
         os.makedirs('./test/task{}/{}/'.format(i // 2 + 1, i % 2 + 1), exist_ok=True)
 
-    # 加载mnist数据集
+    # Load MNIST dataset
     train_X, train_img_nums = DataUtils(filename=trainfile_X).getImage()
     train_y = DataUtils(filename=trainfile_y).getLabel()
     test_X, test_img_nums = DataUtils(testfile_X).getImage()
     test_y = DataUtils(testfile_y).getLabel()
 
-    # 以下内容是将图像保存到本地文件中
+    # Save files
     path_trainset = "train"
     path_testset = "test"
     os.makedirs(path_trainset, exist_ok=True)
