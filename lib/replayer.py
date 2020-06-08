@@ -1,4 +1,5 @@
 import abc
+
 from torch import nn
 
 
@@ -13,9 +14,9 @@ class Replayer(nn.Module, metaclass=abc.ABCMeta):
         # Optimizer (and whether it needs to be reset)
         self.optimizer = None
         self.optim_type = "adam"
-        #--> self.[optim_type]   <str> name of optimizer, relevant if optimizer should be reset for every task
+        # --> self.[optim_type]   <str> name of optimizer, relevant if optimizer should be reset for every task
         self.optim_list = []
-        #--> self.[optim_list]   <list>, if optimizer should be reset after each task, provide list of required <dicts>
+        # --> self.[optim_list]   <list>, if optimizer should be reset after each task, provide list of required <dicts>
 
         # Replay: temperature for distillation loss (and whether it should be used)
         self.replay_targets = "hard"  # hard|soft

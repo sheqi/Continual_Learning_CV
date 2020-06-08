@@ -5,3 +5,5 @@ torchvision==0.2.2
 Pillow==6.2.0
 tqdm==4.19.9
 visdom==0.1.8.9
+pandas==1.0.3
+efficientnet_pytorch

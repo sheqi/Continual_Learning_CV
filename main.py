@@ -2,6 +2,7 @@
 import sys
 
 sys.path.append('./lib')
+
 import argparse
 import os
 import datetime
@@ -21,21 +22,23 @@ from lib.continual_learner import ContinualLearner
 from lib.exemplars import ExemplarHandler
 from lib.replayer import Replayer
 
-EXPERIMENT = 'OpenLORIS'
-SEED = 7
-RESULT_DIR = './Results'
-SCENARIO = 'domain'
-# size of latent representation
-Z_DIM = 100
+RESULT_DIR = './results'
 
-parser = argparse.ArgumentParser('./main.py')
+parser = argparse.ArgumentParser('./main.py', description='Run individual continual learning experiment.')
 parser.add_argument('--get-stamp', action='store_true')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
-parser.add_argument('--factor', type=str, default='clutter', dest='factor')
+parser.add_argument('--gpuID', type=int, nargs='+', default=[0, 1, 2, 3], help='GPU #')
 parser.add_argument('--savepath', type=str, default='./results', dest='savepath')
+
+parser.add_argument('--vis-cross-methods', action='store_true', dest='cross_methods', help='draw plots for cross methods')
+parser.add_argument('--vis-cross-methods-type', nargs='+', default=['spider'], dest='cross_methods_type', help='alternatives=[\'spider\', \'bar\']')
+parser.add_argument('--vis-cross-tasks', action='store_true', dest='cross_tasks', help='draw plots for cross tasks')
+parser.add_argument('--matrices', type=str, nargs='+', default=['ACC', 'BWT', 'FWT', 'Overall ACC'])
+parser.add_argument('--seed', type=int, default=7)
+
+parser.add_argument('--factor', type=str, default='clutter', dest='factor')
 parser.add_argument('--cumulative', type=int, default=0, dest='cul')
 parser.add_argument('--bce', action='store_true')
-
 parser.add_argument('--tasks', type=int, default=9)
 
 parser.add_argument('--fc-layers', type=int, default=3, dest='fc_lay')
@@ -54,6 +57,7 @@ replay_choices = ['offline', 'exact', 'generative', 'none', 'current', 'exemplar
 parser.add_argument('--replay', type=str, default='none', choices=replay_choices)
 parser.add_argument('--distill', action='store_true')
 parser.add_argument('--temp', type=float, default=2., dest='temp')
+parser.add_argument('--z_dim', type=int, default=100)
 
 parser.add_argument('--g-z-dim', type=int, default=100)
 parser.add_argument('--g-fc-lay', type=int)
@@ -71,7 +75,6 @@ parser.add_argument('--emp-fi', action='store_true')
 parser.add_argument('--si', action='store_true')
 parser.add_argument('--c', type=float, default=0.3, dest="si_c")
 parser.add_argument('--epsilon', type=float, default=0.2, dest="epsilon")
-parser.add_argument('--xdg', type=float, default=0., dest="gating_prop")
 
 parser.add_argument('--icarl', action='store_true')
 parser.add_argument('--use-exemplars', action='store_true')
@@ -89,9 +92,11 @@ parser.add_argument('--sample-n', type=int, default=64)
 
 
 def run(args):
-    result_path = os.path.join('./precision_onEachTask', args.savepath)
+    result_path = os.path.join('./benchmarks/results', args.savepath)
     savepath = result_path + '/' + str(datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')) + '.csv'
-    os.makedirs(result_path, exist_ok=True)
+    if not os.path.exists(result_path):
+        print('no exist the path and create one ...')
+        os.makedirs(result_path, exist_ok=True)
 
     # Set default arguments
     args.lr_gen = args.lr if args.lr_gen is None else args.lr_gen
@@ -108,22 +113,15 @@ def run(args):
         args.use_exemplars = True
         args.add_exemplars = True
 
-    # -if EWC, SI or XdG is selected together with 'feedback', give error
-    if args.feedback and (args.ewc or args.si or args.gating_prop > 0 or args.icarl):
-        raise NotImplementedError("EWC, SI, XdG and iCaRL are not supported with feedback connections.")
+    # -if EWC or SI is selected together with 'feedback', give error
+    if args.feedback and (args.ewc or args.si or args.icarl):
+        raise NotImplementedError("EWC, SI and iCaRL are not supported with feedback connections.")
     # -if binary classification loss is selected together with 'feedback', give error
     if args.feedback and args.bce:
         raise NotImplementedError("Binary classification loss not supported with feedback connections.")
-    # -if XdG is selected together with both replay and EWC, give error (either one of them alone with XdG is fine)
-    if args.gating_prop > 0 and (not args.replay == "none") and (args.ewc or args.si):
-        raise NotImplementedError("XdG is not supported with both '{}' replay and EWC / SI.".format(args.replay))
-        # --> problem is that applying different task-masks interferes with gradient calculation
-        #    (should be possible to overcome by calculating backward step on EWC/SI-loss also for each mask separately)
-    # -create plots- and results-directories if needed
+
     if not os.path.isdir(RESULT_DIR):
         os.mkdir(RESULT_DIR)
-
-    # (but note that when XdG is used, task-identity information is being used so the actual scenario is still Task-IL)
 
     # If only want param-stamp, get it printed to screen and exit
     if hasattr(args, "get_stamp") and args.get_stamp:
@@ -132,13 +130,23 @@ def run(args):
 
     # Use cuda?
     cuda = torch.cuda.is_available() and args.cuda
-    device = torch.device("cuda" if cuda else "cpu")
+    device = "cuda" if cuda else "cpu"
+    gpu_devices = None
+
+    if args.gpuID == None:
+        if torch.cuda.device_count() > 1:
+            gpu_devices = ','.join([str(id) for id in range(torch.cuda.device_count())])
+            print('==>  training with CUDA (GPU id: ' + gpu_devices + ') ... <==')
+    else:
+        gpu_devices = ','.join([str(id) for id in args.gpuID])
+        os.environ['CUDA_VISIBLE_DEVICES'] = gpu_devices
+        print('==>  training with CUDA (GPU id: ' + str(args.gpuID) + ') ... <==')
 
     # Set random seeds
-    np.random.seed(SEED)
-    torch.manual_seed(SEED)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
     if cuda:
-        torch.cuda.manual_seed(SEED)
+        torch.cuda.manual_seed(args.seed)
 
     if args.factor == 'sequence':
         args.tasks = 12
@@ -167,7 +175,7 @@ def run(args):
     if args.feedback:
         model = AutoEncoder(
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
-            fc_layers=args.fc_lay, fc_units=args.g_fc_uni, z_dim=Z_DIM,
+            fc_layers=args.fc_lay, fc_units=args.g_fc_uni, z_dim=args.z_dim,
             fc_drop=args.fc_drop, fc_bn=True if args.fc_bn == "yes" else False, fc_nl=args.fc_nl,
         ).to(device)
         model.lamda_pl = 1.  # --> to make that this VAE is also trained to classify
@@ -175,8 +183,8 @@ def run(args):
         model = Classifier(
             image_size=config['size'], image_channels=config['channels'], classes=config['classes'],
             fc_layers=args.fc_lay, fc_units=args.fc_units, fc_drop=args.fc_drop, fc_nl=args.fc_nl,
-            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=True if args.gating_prop > 0 else False,
-            binaryCE=args.bce, binaryCE_distill=True,
+            fc_bn=True if args.fc_bn == "yes" else False, excit_buffer=False,
+            binaryCE=args.bce
         ).to(device)
 
     # Define optimizer (only include parameters that "requires_grad")
@@ -218,22 +226,6 @@ def run(args):
         if args.si:
             model.epsilon = args.epsilon
 
-    # XdG: create for every task a "mask" for each hidden fully connected layer
-    if isinstance(model, ContinualLearner) and args.gating_prop > 0:
-        mask_dict = {}
-        excit_buffer_list = []
-        for task_id in range(args.tasks):
-            mask_dict[task_id + 1] = {}
-            for i in range(model.fcE.layers):
-                layer = getattr(model.fcE, "fcLayer{}".format(i + 1)).linear
-                if task_id == 0:
-                    excit_buffer_list.append(layer.excit_buffer)
-                n_units = len(layer.excit_buffer)
-                gated_units = np.random.choice(n_units, size=int(args.gating_prop * n_units), replace=False)
-                mask_dict[task_id + 1][i] = gated_units
-        model.mask_dict = mask_dict
-        model.excit_buffer_list = excit_buffer_list
-
     # -------------------------------------------------------------------------------------------------#
 
     # -------------------------------#
@@ -251,7 +243,7 @@ def run(args):
         # -specify architecture
         generator = AutoEncoder(
             image_size=config['size'], image_channels=config['channels'],
-            fc_layers=args.g_fc_lay, fc_units=args.g_fc_uni, z_dim=100, classes=config['classes'],
+            fc_layers=args.g_fc_lay, fc_units=args.g_fc_uni, z_dim=args.z_dim, classes=config['classes'],
             fc_drop=args.fc_drop, fc_bn=True if args.fc_bn == "yes" else False, fc_nl=args.fc_nl,
         ).to(device)
         # -set optimizer(s)
@@ -303,17 +295,16 @@ def run(args):
     # Callbacks for reporting and visualizing accuracy
     eval_cb = cb._eval_cb(
         log=args.prec_log, test_datasets=test_datasets, precision_dict=None, iters_per_task=args.iters,
-        test_size=args.prec_n, classes_per_task=classes_per_task, scenario=SCENARIO,
+        test_size=args.prec_n, classes_per_task=classes_per_task
     )
     # -pdf / reporting: summary plots (i.e, only after each task)
     eval_cb_full = cb._eval_cb(
         log=args.iters, test_datasets=test_datasets, precision_dict=precision_dict,
-        iters_per_task=args.iters, classes_per_task=classes_per_task, scenario=SCENARIO,
+        iters_per_task=args.iters, classes_per_task=classes_per_task
     )
-
     eval_cb_exemplars = cb._eval_cb(
         log=args.iters, test_datasets=test_datasets, classes_per_task=classes_per_task,
-        precision_dict=precision_dict_exemplars, scenario=SCENARIO, iters_per_task=args.iters,
+        precision_dict=precision_dict_exemplars, iters_per_task=args.iters,
         with_exemplars=True,
     ) if args.use_exemplars else None
     # -collect them in <lists>
@@ -329,13 +320,51 @@ def run(args):
     start = time.time()
     # Train model
     train_cl(
-        model, train_datasets, test_datasets, replay_mode=args.replay, scenario=SCENARIO,
+        model, train_datasets, test_datasets, replay_mode=args.replay,
         classes_per_task=classes_per_task,
         iters=args.iters, batch_size=args.batch, savepath=savepath,
         generator=generator, gen_iters=args.g_iters, gen_loss_cbs=generator_loss_cbs,
         sample_cbs=sample_cbs, eval_cbs=eval_cbs, loss_cbs=generator_loss_cbs if args.feedback else solver_loss_cbs,
         eval_cbs_exemplars=eval_cbs_exemplars, use_exemplars=args.use_exemplars, add_exemplars=args.add_exemplars,
     )
+
+    # -------------------------------------------------------------------------------------------------#
+
+    # --------------------#
+    # -- VISUALIZATION ---#
+    # --------------------#
+
+    matrices_names = args.matrices
+    method_names = []
+    if args.cul == 1:
+        method_names.append('Cumulative')
+    elif args.cul == 0:
+        method_names.append('Naive')
+    if args.replay == 'current':
+        method_names.append('LwF')
+    if args.online and args.ewc:
+        method_names.append('Online EWC')
+    if args.si:
+        method_names.append('SI')
+    if args.replay == "generative" and not args.feedback and not args.distill:
+        method_names.append('DGR')
+    if args.replay == "generative" and not args.feedback and args.distill:
+        method_names.append('DGR with distillation')
+    if args.replay == "generative" and args.feedback and args.distill:
+        method_names.append('DGR with feedback')
+    if args.ewc and not args.online:
+        method_names.append('EWC')
+
+    print('The selected methods are:', method_names)
+    print('The selected performance matrices are:', matrices_names)
+    if args.cross_methods:
+        print('==>  Drawing results for cross selected-methods ... <==')
+        if 'spider' in args.cross_methods_type:
+            spider = True
+        if 'bar' in args.cross_methods_type:
+            bar = True
+    if args.cross_tasks:
+        print('==>  Drawing results for cross tasks ... <==')
 
 
 if __name__ == '__main__':

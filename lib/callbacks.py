@@ -1,30 +1,24 @@
 import evaluate
 
 
-#########################################################
-## Callback-functions for evaluating model-performance ##
-#########################################################
-
 def _eval_cb(log, test_datasets, precision_dict=None, iters_per_task=None,
-             test_size=None, classes_per_task=None, scenario="class", summary_graph=True, with_exemplars=False):
+             test_size=None, classes_per_task=None, summary_graph=True, with_exemplars=False):
     '''Initiates function for evaluating performance of classifier (in terms of precision).
     [test_datasets]     <list> of <Datasets>; also if only 1 task, it should be presented as a list!
-    [classes_per_task]  <int> number of "active" classes per task
-    [scenario]          <str> how to decide which classes to include during evaluating precision'''
+    [classes_per_task]  <int> number of "active" classes per task'''
 
     def eval_cb(classifier, batch, task=1):
         '''Callback-function, to evaluate performance of classifier.'''
 
         iteration = batch if task == 1 else (task - 1) * iters_per_task + batch
 
-        # evaluate the solver on multiple tasks (and log to visdom)
+        # evaluate the solver on multiple tasks
         if iteration % log == 0:
             evaluate.precision(classifier, test_datasets, task, iteration,
-                               classes_per_task=classes_per_task, scenario=scenario, precision_dict=precision_dict,
+                               classes_per_task=classes_per_task, precision_dict=precision_dict,
                                test_size=test_size, summary_graph=summary_graph,
                                with_exemplars=with_exemplars)
 
-    ## Return the callback-function (except if neither visdom or [precision_dict] is selected!)
     return eval_cb if (precision_dict is not None) else None
 
 

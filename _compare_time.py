@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import argparse
 import os
+
 import numpy as np
+from visualization import visual_plt
+
+import main
 import utils
 from param_stamp import get_param_stamp_from_args
-import visual_plt
-import main
-
 
 description = 'Compare performance & training time of various continual learning methods.'
 parser = argparse.ArgumentParser('./compare_time.py', description=description)
@@ -31,7 +32,7 @@ model_params.add_argument('--fc-drop', type=float, default=0., help="dropout pro
 model_params.add_argument('--fc-bn', type=str, default="no", help="use batch-norm in the fc-layers (no|yes)")
 model_params.add_argument('--fc-nl', type=str, default="relu", choices=["relu", "leakyrelu"])
 model_params.add_argument('--singlehead', action='store_true', help="for Task-IL: use a 'single-headed' output layer   "
-                                                                   " (instead of a 'multi-headed' one)")
+                                                                    " (instead of a 'multi-headed' one)")
 
 # training hyperparameters / initialization
 train_params = parser.add_argument_group('Training Parameters')
@@ -56,13 +57,14 @@ gen_params.add_argument('--lr-gen', type=float, help="learning rate generator (d
 
 # "memory allocation" parameters
 cl_params = parser.add_argument_group('Memory Allocation Parameters')
-cl_params.add_argument('--lambda', type=float, default=5000.,dest="ewc_lambda", help="--> EWC: regularisation strength")
+cl_params.add_argument('--lambda', type=float, default=5000., dest="ewc_lambda",
+                       help="--> EWC: regularisation strength")
 cl_params.add_argument('--o-lambda', type=float, default=5000., help="--> online EWC: regularisation strength")
 cl_params.add_argument('--gamma', type=float, default=1., help="--> EWC: forgetting coefficient (for 'online EWC')")
 cl_params.add_argument('--fisher-n', type=int, help="--> EWC: sample size estimating Fisher Information")
 cl_params.add_argument('--c', type=float, default=0.1, dest="si_c", help="--> SI: regularisation strength")
 cl_params.add_argument('--epsilon', type=float, default=0.1, dest="epsilon", help="--> SI: dampening parameter")
-cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg",help="XdG: prop neurons per layer to gate")
+cl_params.add_argument('--xdg', type=float, default=0.8, dest="xdg", help="XdG: prop neurons per layer to gate")
 
 # evaluation parameters
 eval_params = parser.add_argument_group('Evaluation Parameters')
@@ -148,14 +150,13 @@ if __name__ == '__main__':
     args.gating_prop = 0.
     # args.seed could of course also vary!
 
-    #-------------------------------------------------------------------------------------------------#
+    # -------------------------------------------------------------------------------------------------#
 
-    #--------------------------#
-    #----- RUN ALL MODELS -----#
-    #--------------------------#
+    # --------------------------#
+    # ----- RUN ALL MODELS -----#
+    # --------------------------#
 
-    seed_list = list(range(args.seed, args.seed+args.n_seeds))
-
+    seed_list = list(range(args.seed, args.seed + args.n_seeds))
 
     ###----"BASELINES"----###
 
@@ -169,16 +170,14 @@ if __name__ == '__main__':
     SN = {}
     SN = collect_all(SN, seed_list, args, name="None")
 
-
     ###----"XdG"----####
 
     ## XdG
-    if args.scenario=="task":
+    if args.scenario == "task":
         args.gating_prop = args.xdg
         SXDG = {}
         SXDG = collect_all(SXDG, seed_list, args, name="XdG")
         args.gating_prop = 0
-
 
     ###----"EWC / SI"----####
 
@@ -200,7 +199,6 @@ if __name__ == '__main__':
     SSI = {}
     SSI = collect_all(SSI, seed_list, args, name="SI")
     args.si = False
-
 
     ###----"REPLAY"----###
 
@@ -229,12 +227,11 @@ if __name__ == '__main__':
     ORKD = {}
     ORKD = collect_all(ORKD, seed_list, args, name="RtF")
 
+    # -------------------------------------------------------------------------------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #---------------------------#
-    #----- COLLECT RESULTS -----#
-    #---------------------------#
+    # ---------------------------#
+    # ----- COLLECT RESULTS -----#
+    # ---------------------------#
 
     prec = {}
     ave_prec = {}
@@ -263,17 +260,16 @@ if __name__ == '__main__':
             SEWC[seed][i], SOEWC[seed][i], SSI[seed][i],
         ]
 
-        if args.scenario=="task":
+        if args.scenario == "task":
             prec[seed].append(SXDG[seed][0]["average"])
             ave_prec[seed].append(SXDG[seed][1])
             train_time[seed].append(SXDG[seed][2])
 
+    # -------------------------------------------------------------------------------------------------#
 
-    #-------------------------------------------------------------------------------------------------#
-
-    #--------------------#
-    #----- PLOTTING -----#
-    #--------------------#
+    # --------------------#
+    # ----- PLOTTING -----#
+    # --------------------#
 
     # name for plot
     plot_name = "summary-{}{}-{}".format(args.experiment, args.tasks, args.scenario)
@@ -285,13 +281,13 @@ if __name__ == '__main__':
     names = ["None"]
     colors = ["grey"]
     ids = [1]
-    if args.scenario=="task":
+    if args.scenario == "task":
         names.append("XdG")
         colors.append("purple")
         ids.append(9)
     names += ["EWC", "o-EWC", "SI", "LwF", "DGR", "DGR+distil", "RtF", "Offline"]
     colors += ["deepskyblue", "blue", "yellowgreen", "goldenrod", "indianred", "red", "maroon", "black"]
-    ids += [6,7,8,5,3,2,4,0]
+    ids += [6, 7, 8, 5, 3, 2, 4, 0]
 
     # open pdf
     pp = visual_plt.open_pdf("{}/{}.pdf".format(args.p_dir, plot_name))
@@ -299,21 +295,21 @@ if __name__ == '__main__':
 
     # bar-plot
     means = [np.mean([ave_prec[seed][id] for seed in seed_list]) for id in ids]
-    if len(seed_list)>1:
-        sems = [np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in ids]
-        cis = [1.96*np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list])/(len(seed_list)-1)) for id in ids]
+    if len(seed_list) > 1:
+        sems = [np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in ids]
+        cis = [1.96 * np.sqrt(np.var([ave_prec[seed][id] for seed in seed_list]) / (len(seed_list) - 1)) for id in ids]
     figure = visual_plt.plot_bar(means, names=names, colors=colors, ylabel="average precision (after all tasks)",
-                                 title=title, yerr=cis if len(seed_list)>1 else None, ylim=(0,1))
+                                 title=title, yerr=cis if len(seed_list) > 1 else None, ylim=(0, 1))
     figure_list.append(figure)
 
     # print results to screen
-    print("\n\n"+"#"*60+"\nSUMMARY RESULTS: {}\n".format(title)+"-"*60)
-    for i,name in enumerate(names):
+    print("\n\n" + "#" * 60 + "\nSUMMARY RESULTS: {}\n".format(title) + "-" * 60)
+    for i, name in enumerate(names):
         if len(seed_list) > 1:
-            print("{:12s} {:.2f}  (+/- {:.2f}),  n={}".format(name, 100*means[i], 100*sems[i], len(seed_list)))
+            print("{:12s} {:.2f}  (+/- {:.2f}),  n={}".format(name, 100 * means[i], 100 * sems[i], len(seed_list)))
         else:
-            print("{:12s} {:.2f}".format(name, 100*means[i]))
-    print("#"*60)
+            print("{:12s} {:.2f}".format(name, 100 * means[i]))
+    print("#" * 60)
 
     # line-plot
     ave_lines = []
@@ -325,12 +321,12 @@ if __name__ == '__main__':
             all_entries = [prec[seed][id][line_id] for seed in seed_list]
             new_ave_line.append(np.mean(all_entries))
             if len(seed_list) > 1:
-                new_sem_line.append(1.96*np.sqrt(np.var(all_entries)/(len(all_entries)-1)))
+                new_sem_line.append(1.96 * np.sqrt(np.var(all_entries) / (len(all_entries) - 1)))
         ave_lines.append(new_ave_line)
         sem_lines.append(new_sem_line)
     figure = visual_plt.plot_lines(ave_lines, x_axes=x_axes, line_names=names, colors=colors, title=title,
                                    xlabel="tasks", ylabel="average precision (on tasks seen so far)",
-                                   list_with_errors=sem_lines if len(seed_list)>1 else None)
+                                   list_with_errors=sem_lines if len(seed_list) > 1 else None)
     figure_list.append(figure)
 
     # scatter-plot (accuracy vs training-time)
@@ -338,14 +334,13 @@ if __name__ == '__main__':
     times = []
     for id in ids[:-1]:
         accuracies.append([ave_prec[seed][id] for seed in seed_list])
-        times.append([train_time[seed][id]/60 for seed in seed_list])
+        times.append([train_time[seed][id] / 60 for seed in seed_list])
     xmax = np.max(times)
-    ylim = (0,1.025)
+    ylim = (0, 1.025)
     figure = visual_plt.plot_scatter_groups(x=times, y=accuracies, colors=colors[:-1], figsize=(12, 15), ylim=ylim,
                                             ylabel="average precision (after all tasks)", names=names[:-1],
                                             xlabel="training time (in min)", title=title, xlim=[0, xmax + 0.05 * xmax])
     figure_list.append(figure)
-
 
     # add all figures to pdf
     for figure in figure_list:

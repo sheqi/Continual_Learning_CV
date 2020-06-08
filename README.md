@@ -1,4 +1,10 @@
+<img src="https://github.com/cityuCompuNeuroLab/Continual_Learning_CV/blob/master/lib/logo/openloris-logo.png" width="80" align="left">
+
 # Continual_Learning_CV (CLCV)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![built with Python3.7](https://img.shields.io/badge/build%20with-python3.7-red.svg)](https://www.python.org/)
+[![built with Caffe](https://img.shields.io/badge/build%20with-pytorch-brightgreen.svg)](https://pytorch.org/)
+
 Continual Learning Toolbox for Computer Vision Tasks
 
 
@@ -12,14 +18,24 @@ Qi She et al,
 [OpenLORIS-Object: A Robotic Vision Dataset and Benchmark for Lifelong Deep Learning](https://arxiv.org/pdf/1911.06487.pdf)
 The paper has been accepted into ICRA 2020. 
 
+----------------------------------------------
+
+- [x] OpenLROIS-Object dataset configuration files;
+- [x] SOTA CL methods;
+- [x] OpenLROIS-Object sample codes;
+- [x] More CL benchmarks: MNIST and CIFAR-100 datasets;
+- [x] Visualization tools for 4 CL metrics;
+- [x] More DL backbones: VGG-16, ResNet-18/50/101, EfficientNet;
+- [ ] **New realeases and additional applications** (in progress...)
 ## Requirements
 
 The current version of the code has been tested with following libs:
 * `pytorch 1.1.0`
 * `torchvision 0.2.1`
-* `tqdm`
-* `visdom`
-* `Pillow`
+* `tqdm 4.19.9`
+* `visdom 0.1.8.9`
+* `Pillow 6.2.0`
+* `Pandas 1.0.3`
 
 Experimental platforms:
 * `Intel Core i9 CPU`
@@ -34,6 +50,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Data Preparation
+### OpenLORIS-Object
 Step 1: Download data (including RGB-D images, masks, and bounding boxes) following [this instruction](https://drive.google.com/open?id=1KlgjTIsMD5QRjmJhLxK4tSHIr0wo9U6XI5PuF8JDJCo). 
 
 Step 2: Run following scripts:
@@ -49,6 +66,12 @@ Step 4: Generate the `.pkl` files of data.
  python3 pk_gene.py
  python3 pk_gene_sequence.py
 ```
+
+### MNIST and CIFAR-100
+
+Please refer to ```./benchmarks/Readme.md```. 
+
+
 ## Quickly get hands on
 
 You can directly use scripts on 9 algorithms and 2 benchmarks (may need to modify arguments/parameters in `.bash` files if necessary):
