@@ -66,7 +66,7 @@ For MNIST and CIFAR-100 datasets, Please refer to `./benchmarks/Readme.md`.
 
 ## Quick Start
 
-You can directly use scripts on **9** algorithms and **2** benchmarks stated in the paper (may need to modify arguments/parameters in `.bash` files if necessary):
+You can directly use scripts on **9** algorithms and **2** benchmarks stated in the paper (may need to modify arguments/parameters in `.bash` files if necessary, "xxx.bash" indicates the factor chanegs with object images provided):
 
 ```
 bash clutter.bash
