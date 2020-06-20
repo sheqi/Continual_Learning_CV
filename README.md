@@ -9,7 +9,9 @@ Continual Learning Toolbox for Computer Vision Tasks
 
 
 This toolbox aims at prototyping current computer vision tasks, e.g., **human gesture recognition, action localization/detection, object detection/segmentation, and person ReID** in a **continual/lifelong learning** manner. 
-It means most of the SOTAs can be updated with novel data without retraining from scratch, and at the same time, they are able to migrate from **catastrophic forgetting** problem, furthermore, the models can learn with **few-shot samples and adapt quickly** to the target domains. Since the CL strategies are quite complex and flexible, it has some intersections with recent few-shot/meta/multi-task learning work.
+It means most of the SOTAs can be updated with novel data without retraining from scratch, and at the same time, they are able to migrate from **catastrophic forgetting** problem, furthermore, the models can learn with **few-shot samples and adapt quickly** to the target domains. 
+
+Since the CL strategies are quite complex and flexible, it has some intersections with recent few-shot/meta/multi-task learning work.
 
 ## Datasets and Benchmarks
 We are testing the performances based on **OpenLORIS-Object dataset**. The basic codes are the implementation of the following paper: 
