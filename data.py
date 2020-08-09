@@ -22,7 +22,7 @@ class MyDataset(Dataset):
             datapath = sorted([p for p in datapath if p[-1].isdigit()])
             for i in range(len(datapath)):
                 temp = glob.glob(datapath[i] + '/*.jpg')
-                self.imgs.extend([Image.open(x).convert('RGB').resize((50, 50)) for x in temp])
+                self.imgs.extend([Image.open(x).convert('RGB').resize((224, 224)) for x in temp])
                 self.labels.extend([i] * len(temp))
             print("  --> batch{} -{}set consisting of {} samples".format(batch_num, mode, len(self)))
 
